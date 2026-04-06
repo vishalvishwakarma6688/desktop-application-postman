@@ -1,0 +1,6 @@
+{
+  "name": "postman-like-electron-main",
+  "version": "1.0.0",
+  "main": "dist-electron/main.js",
+  "type": "commonjs"
+}
