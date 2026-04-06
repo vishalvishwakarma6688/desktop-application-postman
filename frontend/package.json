@@ -77,7 +77,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build-resources/icon.ico"
@@ -92,7 +94,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "build-resources/icon.icns",
@@ -102,7 +107,9 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build-resources/icon.png",
@@ -111,8 +118,17 @@
     "protocols": [
       {
         "name": "Postman Like",
-        "schemes": ["postmanlike"]
+        "schemes": [
+          "postmanlike"
+        ]
       }
-    ]
+    ],
+    "publish": [
+  {
+    "provider": "github",
+    "owner": "vishalvishwakarma6688",
+    "repo": "desktop-application-postman"
+  }
+]
   }
 }
