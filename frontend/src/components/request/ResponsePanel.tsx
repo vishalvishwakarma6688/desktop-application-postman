@@ -73,7 +73,7 @@ export default function ResponsePanel({ response, isSending, onCancel, testResul
         if (!searchQuery.trim()) return text;
         const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`(${escaped})`, 'gi');
-        return text.split(regex).map((part, idx) => {
+        return text.split(regex).map((part, _idx) => {
             if (regex.test(part)) return `<mark class="bg-yellow-400/40 text-yellow-200 rounded-sm">${part}</mark>`;
             return part;
         }).join('');

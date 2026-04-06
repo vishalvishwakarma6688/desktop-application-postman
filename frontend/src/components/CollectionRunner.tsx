@@ -122,7 +122,6 @@ export default function CollectionRunner({ collection, onClose }: Props) {
     const [currentIdx, setCurrentIdx] = useState(-1);
     const [delay, setDelay] = useState(0);
     const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
-    const [aborted, setAborted] = useState(false);
     const abortRef = { current: false };
 
     const { data } = useQuery({
@@ -137,7 +136,6 @@ export default function CollectionRunner({ collection, onClose }: Props) {
         setRunning(true);
         setResults([]);
         setCurrentIdx(0);
-        setAborted(false);
         abortRef.current = false;
 
         const runResults: RunResult[] = [];
@@ -179,7 +177,6 @@ export default function CollectionRunner({ collection, onClose }: Props) {
 
     const handleStop = () => {
         abortRef.current = true;
-        setAborted(true);
         setRunning(false);
         setCurrentIdx(-1);
     };
@@ -263,7 +260,6 @@ export default function CollectionRunner({ collection, onClose }: Props) {
                     {requests.map((req, i) => {
                         const result = results[i];
                         const isCurrent = running && currentIdx === i;
-                        const isPending = running && currentIdx < i;
                         const isExpanded = expandedIdx === i;
 
                         return (

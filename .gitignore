@@ -24,3 +24,7 @@ Thumbs.db
 
 # misc
 *.local
+
+frontend/dist/
+frontend/dist-electron/
+frontend/release/

@@ -2,11 +2,9 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { workspaceApi } from '@/features/workspace/api';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
-import { useAuthStore } from '@/store/useAuthStore';
 import MainLayout from '@/layouts/MainLayout';
 
 export default function DashboardPage() {
-    const { user, logout } = useAuthStore();
     const { setWorkspaces, setCurrentWorkspace, currentWorkspace } = useWorkspaceStore();
 
     const { data: workspacesData, isLoading } = useQuery({
