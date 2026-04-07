@@ -28,3 +28,9 @@ Thumbs.db
 frontend/dist/
 frontend/dist-electron/
 frontend/release/
+
+# web project
+web/dist/
+web/node_modules/
+web/.vite/
+web/.cache/
