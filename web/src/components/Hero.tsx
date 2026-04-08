@@ -44,7 +44,7 @@ export default function Hero() {
                 backgroundSize: '60px 60px'
             }} />
 
-            <div className={`relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`relative z-10 w-full max-w-[1400px] mt-24 mx-auto px-4 sm:px-6 lg:px-8 text-center transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
 
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm text-orange-400 mb-8 animate-pulse-slow">
