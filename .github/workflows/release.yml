@@ -7,16 +7,16 @@ tags:
 
 jobs:
 build:
-strategy:
-matrix:
-include:
-- os: windows-latest
-platform: win
-- os: ubuntu-latest
-platform: linux
+runs-on: ${{ matrix.os }}
 
 ```
-runs-on: ${{ matrix.os }}
+strategy:
+  matrix:
+    include:
+      - os: windows-latest
+        platform: win
+      - os: ubuntu-latest
+        platform: linux
 
 steps:
   - name: Checkout
@@ -26,14 +26,13 @@ steps:
     uses: actions/setup-node@v4
     with:
       node-version: 20
-      cache: 'npm'
+      cache: npm
       cache-dependency-path: frontend/package-lock.json
 
   - name: Install dependencies
-    run: npm install
     working-directory: frontend
+    run: npm install
 
-  # ✅ FIX: Linux dependencies
   - name: Install Linux dependencies
     if: matrix.platform == 'linux'
     run: |
@@ -41,16 +40,15 @@ steps:
       sudo apt-get install -y fakeroot dpkg
 
   - name: Build app
-    run: npm run build
     working-directory: frontend
+    run: npm run build
 
   - name: Package app
-    run: npx electron-builder --${{ matrix.platform }} --publish never
     working-directory: frontend
+    run: npx electron-builder --${{ matrix.platform }} --publish never
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ✅ FIX: Upload ALL files (no pattern issues)
   - name: Upload artifacts
     uses: actions/upload-artifact@v4
     with:
@@ -62,12 +60,13 @@ steps:
 release:
 needs: build
 runs-on: ubuntu-latest
-permissions:
-contents: write
 
 ```
+permissions:
+  contents: write
+
 steps:
-  - name: Download all artifacts
+  - name: Download artifacts
     uses: actions/download-artifact@v4
     with:
       path: artifacts
