@@ -3,6 +3,10 @@
   "version": "1.0.2",
   "description": "Postman-like Desktop Application",
   "homepage": "https://github.com/vishalvishwakarma6688/desktop-application-postman",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vishalvishwakarma6688/desktop-application-postman.git"
+  },
   "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {
