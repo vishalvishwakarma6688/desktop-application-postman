@@ -58,6 +58,7 @@
   "build": {
     "appId": "com.postmanlike.app",
     "productName": "Postman Like",
+    "artifactName": "Postman-Like-${os}.${ext}",
     "copyright": "Copyright © 2025",
     "asar": true,
     "directories": {

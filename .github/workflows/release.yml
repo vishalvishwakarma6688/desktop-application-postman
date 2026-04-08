@@ -1,77 +1,83 @@
 name: Build & Release
 
 on:
-  push:
-    tags:
-      - 'v*'   # triggers on: git tag v1.0.0 && git push origin v1.0.0
+push:
+tags:
+- 'v*'
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            platform: win
-          - os: ubuntu-latest
-            platform: linux
+build:
+strategy:
+matrix:
+include:
+- os: windows-latest
+platform: win
+- os: ubuntu-latest
+platform: linux
 
-    runs-on: ${{ matrix.os }}
+```
+runs-on: ${{ matrix.os }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 20
+      cache: 'npm'
+      cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: frontend
+  - name: Install dependencies
+    run: npm install
+    working-directory: frontend
 
-      - name: Build Vite + Electron
-        run: npm run build
-        working-directory: frontend
+  # ✅ FIX: Linux dependencies
+  - name: Install Linux dependencies
+    if: matrix.platform == 'linux'
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y fakeroot dpkg
 
-      - name: Package with electron-builder
-        run: npx electron-builder --${{ matrix.platform }} --publish never
-        working-directory: frontend
-        # continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  - name: Build app
+    run: npm run build
+    working-directory: frontend
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-${{ matrix.platform }}
-          path: |
-            frontend/release/*.exe
-            frontend/release/*.dmg
-            frontend/release/*.AppImage
-            frontend/release/*.zip
-            frontend/release/*.deb
-          if-no-files-found: ignore
+  - name: Package app
+    run: npx electron-builder --${{ matrix.platform }} --publish never
+    working-directory: frontend
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+  # ✅ FIX: Upload ALL files (no pattern issues)
+  - name: Upload artifacts
+    uses: actions/upload-artifact@v4
+    with:
+      name: release-${{ matrix.platform }}
+      path: frontend/release/**/*
+      if-no-files-found: warn
+```
 
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
+release:
+needs: build
+runs-on: ubuntu-latest
+permissions:
+contents: write
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+steps:
+  - name: Download all artifacts
+    uses: actions/download-artifact@v4
+    with:
+      path: artifacts
+      merge-multiple: true
+
+  - name: Create GitHub Release
+    uses: softprops/action-gh-release@v2
+    with:
+      files: artifacts/**/*
+      generate_release_notes: true
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
