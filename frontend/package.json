@@ -67,6 +67,7 @@
     "appId": "com.postmanlike.app",
     "productName": "Postman Like",
     "artifactName": "Postman-Like-${os}.${ext}",
+    "publish": null,
     "copyright": "Copyright © 2025",
     "asar": true,
     "directories": {
@@ -119,7 +120,7 @@
       ],
       "icon": "build-resources/icon.png",
       "category": "Development",
-      "maintainer": "Vishal Vishwakarma vishalvishwakarma2786@gmail.com"
+      "maintainer": "Vishal Vishwakarma <vishalvishwakarma2786@gmail.com>"
     },
     "protocols": [
       {
