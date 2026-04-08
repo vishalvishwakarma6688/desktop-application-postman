@@ -2,6 +2,7 @@
   "name": "postman-like-electron",
   "version": "1.0.2",
   "description": "Postman-like Desktop Application",
+  "homepage": "https://github.com/vishalvishwakarma6688/desktop-application-postman",
   "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {
@@ -22,7 +23,10 @@
     "postman",
     "api-client"
   ],
-  "author": "",
+  "author": {
+    "name": "Vishal Vishwakarma",
+    "email": "vishalvishwakarma2786@gmail.com"
+  },
   "license": "ISC",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -110,7 +114,8 @@
         "deb"
       ],
       "icon": "build-resources/icon.png",
-      "category": "Development"
+      "category": "Development",
+      "maintainer": "Vishal Vishwakarma vishalvishwakarma2786@gmail.com"
     },
     "protocols": [
       {
