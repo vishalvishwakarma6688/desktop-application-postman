@@ -106,7 +106,7 @@
     "linux": {
       "target": [
         {
-          "target": "AppImage",
+          "target": ["AppImage", "deb"],
           "arch": [
             "x64"
           ]
@@ -124,11 +124,11 @@
       }
     ],
     "publish": [
-  {
-    "provider": "github",
-    "owner": "vishalvishwakarma6688",
-    "repo": "desktop-application-postman"
-  }
-]
+      {
+        "provider": "github",
+        "owner": "vishalvishwakarma6688",
+        "repo": "desktop-application-postman"
+      }
+    ]
   }
 }
