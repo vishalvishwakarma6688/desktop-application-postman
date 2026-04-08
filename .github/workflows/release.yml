@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       
@@ -37,11 +37,24 @@ jobs:
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y fakeroot dpkg rpm
-      
-      - name: Build app
-        working-directory: frontend
-        run: npm run build
+          sudo apt-get install -y \
+            fakeroot \
+            dpkg \
+            rpm \
+            libgtk-3-0 \
+            libnss3 \
+            libxss1 \
+            libasound2 \
+            libxtst6 \
+            libx11-xcb1 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxrandr2 \
+            libgbm1 \
+            libpango-1.0-0 \
+            libcairo2 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0
       
       - name: Package app
         working-directory: frontend
@@ -55,25 +68,3 @@ jobs:
           name: release-${{ matrix.platform }}
           path: frontend/release/**/*
           if-no-files-found: error
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write
-    
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
-      
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
