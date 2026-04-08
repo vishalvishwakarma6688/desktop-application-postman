@@ -2,15 +2,15 @@ export type OS = 'windows' | 'linux' | 'mac' | 'unknown';
 
 export const DOWNLOADS = {
     windows: {
-        url: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.0.1/Postman.Like.Setup.1.0.0.exe',
+        url: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.2.3/Postman-Like-win.exe',
         label: 'Download for Windows',
-        version: 'v1.0.1 · Windows 10/11 · 64-bit',
+        version: 'v1.2.3 · Windows 10/11 · 64-bit',
         ext: '.exe',
     },
     linux: {
-        url: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.0.1/Postman.Like-1.0.0.AppImage',
+        url: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.2.3/Postman-Like-linux.AppImage',
         label: 'Download for Linux',
-        version: 'v1.0.1 · AppImage · 64-bit',
+        version: 'v1.2.3 · AppImage · 64-bit',
         ext: '.AppImage',
     },
     mac: {
