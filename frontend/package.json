@@ -124,13 +124,6 @@
           "postmanlike"
         ]
       }
-    ],
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "vishalvishwakarma6688",
-        "repo": "desktop-application-postman"
-      }
     ]
   }
 }
