@@ -37,21 +37,17 @@ jobs:
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y fakeroot dpkg libarchive-tools \
-            libfuse2 libglib2.0-dev libgtk-3-dev libnss3 \
-            libxss1 libxtst6 xvfb
+          sudo apt-get install -y fakeroot dpkg rpm
       
       - name: Build app
-          working-directory: frontend
-          run: npm run build
-          continue-on-error: false
-
+        working-directory: frontend
+        run: npm run build
+      
       - name: Package app
-          working-directory: frontend
-          run: npx electron-builder --${{ matrix.platform }} --publish never --verbose
-          env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            DEBUG: electron-builder
+        working-directory: frontend
+        run: npm run build:${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
