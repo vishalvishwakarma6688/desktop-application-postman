@@ -1,6 +1,6 @@
 {
   "name": "postman-like-electron",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Postman-like Desktop Application",
   "main": "dist-electron/main.js",
   "type": "module",
@@ -105,12 +105,8 @@
     },
     "linux": {
       "target": [
-        {
-          "target": ["AppImage", "deb"],
-          "arch": [
-            "x64"
-          ]
-        }
+        "AppImage",
+        "deb"
       ],
       "icon": "build-resources/icon.png",
       "category": "Development"

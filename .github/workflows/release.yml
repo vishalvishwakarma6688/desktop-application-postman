@@ -39,7 +39,7 @@ jobs:
       - name: Package with electron-builder
         run: npx electron-builder --${{ matrix.platform }} --publish never
         working-directory: frontend
-        continue-on-error: true
+        # continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

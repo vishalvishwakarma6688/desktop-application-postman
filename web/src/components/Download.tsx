@@ -53,7 +53,7 @@ export default function Download() {
                         Ready to Start?
                     </span>
                     <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-                        Download <span className="gradient-text">Postman Like</span>
+                        Download <span className="gradient-text">APIFlow</span>
                     </h2>
                     <p className="max-w-2xl mx-auto text-lg text-gray-400 mb-8">
                         Free forever. No signup required. Start testing APIs in seconds.
@@ -88,6 +88,55 @@ export default function Download() {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Linux Installation Commands */}
+                <div className="glass rounded-2xl p-8 max-w-4xl mx-auto mb-12">
+                    <div className="text-center mb-6">
+                        <Terminal className="h-8 w-8 text-orange-400 mx-auto mb-3" />
+                        <h3 className="text-2xl font-bold text-white mb-2">Linux Installation Commands</h3>
+                        <p className="text-gray-400 text-sm">
+                            For Ubuntu/Debian → use .deb  •  For other Linux → use AppImage
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        {/* Ubuntu/Debian Command */}
+                        <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/50">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-semibold text-orange-400">Ubuntu / Debian (.deb)</span>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText('wget -O postman-like.deb https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/latest/download/Postman-Like-1.0.2.deb && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y');
+                                    }}
+                                    className="text-xs text-gray-400 hover:text-orange-400 transition-colors"
+                                >
+                                    Copy
+                                </button>
+                            </div>
+                            <code className="text-xs text-gray-300 break-all block">
+                                wget -O postman-like.deb https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/latest/download/Postman-Like-1.0.2.deb && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y
+                            </code>
+                        </div>
+
+                        {/* Universal Linux Command */}
+                        <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/50">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-semibold text-blue-400">Universal Linux (AppImage)</span>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText('wget -O postman-like.AppImage https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/latest/download/Postman-Like-1.0.2.AppImage && chmod +x postman-like.AppImage && ./postman-like.AppImage');
+                                    }}
+                                    className="text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                                >
+                                    Copy
+                                </button>
+                            </div>
+                            <code className="text-xs text-gray-300 break-all block">
+                                wget -O postman-like.AppImage https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/latest/download/Postman-Like-1.0.2.AppImage && chmod +x postman-like.AppImage && ./postman-like.AppImage
+                            </code>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Quick download CTA */}
