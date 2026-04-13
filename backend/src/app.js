@@ -14,8 +14,12 @@ import aiRoutes from './routes/ai.js';
 const app = express();
 
 // Middleware
+const allowedOrigins = process.env.CORS_ORIGIN 
+    ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : ['http://localhost:3000', 'http://localhost:5173'];
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: allowedOrigins,
     credentials: true
 }));
 app.use(express.json());

@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from 'electron';
+import { ipcMain, dialog, app } from 'electron';
 
 export const setupIpcHandlers = () => {
     // File dialog handler
@@ -15,7 +15,6 @@ export const setupIpcHandlers = () => {
 
     // Get app path
     ipcMain.handle('app:getPath', async (event, name: string) => {
-        const { app } = require('electron');
         return app.getPath(name as any);
     });
 };

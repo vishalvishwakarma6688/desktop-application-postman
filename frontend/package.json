@@ -79,10 +79,6 @@
       "dist-electron/**/*",
       "!node_modules/**/*"
     ],
-    "extraMetadata": {
-      "main": "dist-electron/main.js",
-      "type": "commonjs"
-    },
     "win": {
       "target": [
         {

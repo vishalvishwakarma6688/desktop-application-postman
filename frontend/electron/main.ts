@@ -1,7 +1,12 @@
 import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron';
 import * as path from 'path';
 import { Menu } from 'electron';
-import { setupIpcHandlers } from './ipc/handlers';
+import { fileURLToPath } from 'url';
+import { setupIpcHandlers } from './ipc/handlers.js';
+
+// ES module polyfills for __dirname and __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 Menu.setApplicationMenu(null);
 
