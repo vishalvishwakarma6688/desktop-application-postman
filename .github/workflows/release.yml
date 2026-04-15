@@ -61,6 +61,7 @@ jobs:
         run: npm run build:${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_BACKEND_URL: https://desktop-application-postman.onrender.com
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
