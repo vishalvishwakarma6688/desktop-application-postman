@@ -52,20 +52,6 @@ const createWindow = () => {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
     }
 
-    // Enable DevTools keyboard shortcuts in production for debugging
-    mainWindow.webContents.on('before-input-event', (event, input) => {
-        if (input.type === 'keyDown') {
-            // F12 - Toggle DevTools
-            if (input.key === 'F12') {
-                mainWindow?.webContents.toggleDevTools();
-            }
-            // Ctrl+Shift+I (Windows/Linux) or Cmd+Option+I (Mac) - Toggle DevTools
-            if ((input.control || input.meta) && input.shift && input.key.toLowerCase() === 'i') {
-                mainWindow?.webContents.toggleDevTools();
-            }
-        }
-    });
-
     mainWindow.once('ready-to-show', () => mainWindow?.show());
     mainWindow.on('closed', () => { mainWindow = null; });
 };
