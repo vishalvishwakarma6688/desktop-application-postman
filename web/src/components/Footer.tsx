@@ -1,20 +1,21 @@
+import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin, Mail, Heart } from 'lucide-react';
 
 const FOOTER_LINKS = {
     Product: [
-        { label: 'Features', href: '#features' },
-        { label: 'How it Works', href: '#how-it-works' },
-        { label: 'Download', href: '#download' },
+        { label: 'Features', href: '#features', external: false },
+        { label: 'How it Works', href: '#how-it-works', external: false },
+        { label: 'Download', href: '#download', external: false },
     ],
     Resources: [
-        { label: 'Documentation', href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman#readme' },
-        { label: 'GitHub', href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman' },
-        { label: 'Issues', href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/issues' },
+        { label: 'Documentation', href: '/documentation', external: false },
+        { label: 'GitHub', href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman', external: true },
+        { label: 'Issues', href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/issues', external: true },
     ],
     Legal: [
-        { label: 'Privacy Policy', href: '#' },
-        { label: 'Terms of Service', href: '#' },
-        { label: 'License', href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/blob/main/LICENSE' },
+        { label: 'Privacy Policy', href: '/privacy', external: false },
+        { label: 'Terms of Service', href: '/terms', external: false },
+        { label: 'License', href: '/license', external: false },
     ],
 };
 
@@ -72,14 +73,30 @@ export default function Footer() {
                             <ul className="space-y-2">
                                 {links.map(link => (
                                     <li key={link.label}>
-                                        <a
-                                            href={link.href}
-                                            target={link.href.startsWith('http') ? '_blank' : undefined}
-                                            rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                            className="text-sm text-gray-400 hover:text-orange-400 transition-colors"
-                                        >
-                                            {link.label}
-                                        </a>
+                                        {link.external ? (
+                                            <a
+                                                href={link.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm text-gray-400 hover:text-orange-400 transition-colors"
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ) : link.href.startsWith('#') ? (
+                                            <a
+                                                href={link.href}
+                                                className="text-sm text-gray-400 hover:text-orange-400 transition-colors"
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                to={link.href}
+                                                className="text-sm text-gray-400 hover:text-orange-400 transition-colors"
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

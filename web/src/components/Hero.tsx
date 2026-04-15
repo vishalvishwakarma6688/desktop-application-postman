@@ -54,13 +54,21 @@ export default function Hero() {
 
                 {/* Headline */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-tight mb-6">
-                    <div className="flex flex-col items-center gap-2">
+                    {/* Desktop layout - single line */}
+                    <div className="hidden sm:flex flex-col items-center gap-2">
                         <div className="flex items-center justify-center gap-x-3 sm:gap-x-4">
                             <span>Test & Debug Your</span>
                             <span className="gradient-text inline-block min-w-[180px] sm:min-w-[240px] lg:min-w-[300px] text-left">
                                 {displayed}<span className="animate-pulse">|</span>
                             </span>
                         </div>
+                        <div className="text-gray-300">Like a Pro</div>
+                    </div>
+
+                    {/* Mobile layout - typing text in middle */}
+                    <div className="flex sm:hidden flex-col items-center gap-2">
+                        <div>Test & Debug</div>
+                        <div>Your <span className="gradient-text">{displayed}<span className="animate-pulse">|</span></span></div>
                         <div className="text-gray-300">Like a Pro</div>
                     </div>
                 </h1>
