@@ -1,9 +1,11 @@
 import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron';
-import { autoUpdater } from 'electron-updater';
+import pkg from 'electron-updater';
 import * as path from 'path';
 import { Menu } from 'electron';
 import { fileURLToPath } from 'url';
 import { setupIpcHandlers } from './ipc/handlers.js';
+
+const { autoUpdater } = pkg;
 
 // ES module polyfills for __dirname and __filename
 const __filename = fileURLToPath(import.meta.url);
@@ -12,32 +14,6 @@ const __dirname = path.dirname(__filename);
 Menu.setApplicationMenu(null);
 
 let mainWindow: BrowserWindow | null = null;
-
-autoUpdater.on('checking-for-update', () => {
-    console.log('Checking for update...');
-});
-
-autoUpdater.on('update-available', () => {
-    console.log('Update available');
-});
-
-autoUpdater.on('update-not-available', () => {
-    console.log('No updates');
-});
-
-autoUpdater.on('error', (err) => {
-    console.error('Update error:', err);
-});
-
-autoUpdater.on('download-progress', (progressObj) => {
-    console.log(`Downloading: ${progressObj.percent}%`);
-});
-
-autoUpdater.on('update-downloaded', () => {
-    console.log('Update downloaded');
-    autoUpdater.quitAndInstall();
-});
-
 
 if (process.defaultApp) {
     if (process.argv.length >= 2) {
@@ -84,7 +60,6 @@ const createWindow = () => {
 app.whenReady().then(() => {
     setupIpcHandlers();
 
-    // IPC: open OAuth URL in real system browser
     ipcMain.on('oauth:open', (_event, url: string) => {
         shell.openExternal(url);
     });
@@ -92,6 +67,31 @@ app.whenReady().then(() => {
     createWindow();
 
     if (app.isPackaged) {
+        autoUpdater.on('checking-for-update', () => {
+            console.log('Checking for update...');
+        });
+
+        autoUpdater.on('update-available', () => {
+            console.log('Update available');
+        });
+
+        autoUpdater.on('update-not-available', () => {
+            console.log('No updates');
+        });
+
+        autoUpdater.on('error', (err) => {
+            console.error('Update error:', err);
+        });
+
+        autoUpdater.on('download-progress', (progressObj) => {
+            console.log(`Downloading: ${progressObj.percent}%`);
+        });
+
+        autoUpdater.on('update-downloaded', () => {
+            console.log('Update downloaded');
+            autoUpdater.quitAndInstall();
+        });
+
         autoUpdater.checkForUpdatesAndNotify();
     }
 
