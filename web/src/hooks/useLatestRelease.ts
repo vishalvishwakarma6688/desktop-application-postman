@@ -28,7 +28,13 @@ const FALLBACK_LINKS: DownloadLinks = {
 };
 
 const getDownloadLinks = (assets: ReleaseAsset[], version: string): DownloadLinks => {
-    const windows = assets.find(a => a.name.endsWith('.exe'));
+    // Filter for the main Windows executable (not elevate.exe or other helper files)
+    const windows = assets.find(a =>
+        a.name.endsWith('.exe') &&
+        !a.name.toLowerCase().includes('elevate') &&
+        (a.name.includes('Postman-Like') || a.name.includes('postman-like'))
+    );
+
     const linuxAppImage = assets.find(a => a.name.endsWith('.AppImage'));
     const linuxDeb = assets.find(a => a.name.endsWith('.deb'));
 
