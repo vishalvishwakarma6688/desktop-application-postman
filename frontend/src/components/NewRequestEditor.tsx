@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { requestApi } from '@/features/requests/api';
 import { useTabStore } from '@/store/useTabStore';
 import { Send } from 'lucide-react';
@@ -10,6 +11,7 @@ import {
 import KeyValueEditor from './request/KeyValueEditor';
 import BodyEditor from './request/BodyEditor';
 import AuthEditor from './request/AuthEditor';
+import { parseCurl, isCurlCommand } from '@/utils/curlParser';
 
 interface Props {
     tabId: string;
@@ -62,6 +64,43 @@ export default function NewRequestEditor({ tabId, initialData }: Props) {
     };
 
     const handleUrlChange = (val: string) => {
+        // Check if it's a cURL command
+        if (isCurlCommand(val)) {
+            const parsed = parseCurl(val);
+            if (parsed) {
+                // Extract query params from URL
+                try {
+                    const urlObj = new URL(parsed.url);
+                    const params: KeyValue[] = [];
+                    urlObj.searchParams.forEach((value, key) => {
+                        params.push({ key, value, enabled: true });
+                    });
+                    if (params.length === 0) params.push({ key: '', value: '', enabled: true });
+
+                    setMethod(parsed.method as Method);
+                    setUrl(parsed.url);
+                    setHeaders(parsed.headers);
+                    setQueryParams(params);
+                    setBody(parsed.body);
+                    setAuth(parsed.auth);
+
+                    toast.success('cURL command imported successfully');
+                } catch {
+                    setMethod(parsed.method as Method);
+                    setUrl(parsed.url);
+                    setHeaders(parsed.headers);
+                    setBody(parsed.body);
+                    setAuth(parsed.auth);
+
+                    toast.success('cURL command imported successfully');
+                }
+                return;
+            } else {
+                toast.error('Failed to parse cURL command');
+                return;
+            }
+        }
+
         setUrl(val);
         fetchSuggestions(val);
         setShowSuggestions(true);
@@ -97,10 +136,24 @@ export default function NewRequestEditor({ tabId, initialData }: Props) {
 
     const handleSend = () => {
         if (!initialData.collection || !initialData.workspace) return;
+
+        const finalUrl = url || 'https://example.com';
+
+        // Block example.com URLs
+        try {
+            const urlObj = new URL(finalUrl);
+            if (urlObj.hostname === 'example.com' || urlObj.hostname.endsWith('.example.com')) {
+                toast.error('This is a dummy API. Please add your own API to test.');
+                return;
+            }
+        } catch (e) {
+            // Invalid URL, let the backend handle it
+        }
+
         createMutation.mutate({
             name,
             method,
-            url: url || 'https://example.com',
+            url: finalUrl,
             collection: initialData.collection as string,
             workspace: initialData.workspace as string,
             headers: headers.filter(h => h.key),
@@ -148,6 +201,13 @@ export default function NewRequestEditor({ tabId, initialData }: Props) {
                             type="text"
                             value={url}
                             onChange={(e) => handleUrlChange(e.target.value)}
+                            onPaste={(e) => {
+                                const pastedText = e.clipboardData.getData('text');
+                                if (isCurlCommand(pastedText)) {
+                                    e.preventDefault();
+                                    handleUrlChange(pastedText);
+                                }
+                            }}
                             onFocus={handleUrlFocus}
                             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                             onKeyDown={(e) => {

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import * as path from 'path';
 import { Menu } from 'electron';
 import { fileURLToPath } from 'url';
@@ -12,8 +13,32 @@ Menu.setApplicationMenu(null);
 
 let mainWindow: BrowserWindow | null = null;
 
-// Register custom protocol for OAuth callback
-// The backend will redirect to: postmanlike://oauth-callback#token=<jwt>
+autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...');
+});
+
+autoUpdater.on('update-available', () => {
+    console.log('Update available');
+});
+
+autoUpdater.on('update-not-available', () => {
+    console.log('No updates');
+});
+
+autoUpdater.on('error', (err) => {
+    console.error('Update error:', err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+    console.log(`Downloading: ${progressObj.percent}%`);
+});
+
+autoUpdater.on('update-downloaded', () => {
+    console.log('Update downloaded');
+    autoUpdater.quitAndInstall();
+});
+
+
 if (process.defaultApp) {
     if (process.argv.length >= 2) {
         app.setAsDefaultProtocolClient('postmanlike', process.execPath, [path.resolve(process.argv[1])]);
@@ -65,6 +90,10 @@ app.whenReady().then(() => {
     });
 
     createWindow();
+
+    if (app.isPackaged) {
+        autoUpdater.checkForUpdatesAndNotify();
+    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

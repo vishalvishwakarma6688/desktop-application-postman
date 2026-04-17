@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
@@ -7,11 +7,12 @@ import { requestApi } from '@/features/requests/api';
 import { workspaceApi } from '@/features/workspace/api';
 import { useTabStore } from '@/store/useTabStore';
 import { Collection, Request } from '@/types';
-import { Plus, Folder, Upload, Search, X } from 'lucide-react';
+import { Plus, Folder, Upload, Search, X, FileJson, Terminal } from 'lucide-react';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import CollectionItem from '@/components/sidebar/CollectionItem';
+import { parseCurl, isCurlCommand } from '@/utils/curlParser';
 
 export default function Sidebar() {
     const { currentWorkspace, workspaces, setCurrentWorkspace } = useWorkspaceStore();
@@ -25,7 +26,11 @@ export default function Sidebar() {
     const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
     const [importError, setImportError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showImportMenu, setShowImportMenu] = useState(false);
+    const [showPasteDialog, setShowPasteDialog] = useState(false);
+    const [pasteContent, setPasteContent] = useState('');
     const importInputRef = useRef<HTMLInputElement>(null);
+    const importMenuRef = useRef<HTMLDivElement>(null);
 
     const { data: collectionsData } = useQuery({
         queryKey: ['collections', currentWorkspace?._id],
@@ -112,59 +117,117 @@ export default function Sidebar() {
 
     const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         setImportError(null);
+        setShowImportMenu(false);
         const file = e.target.files?.[0];
         if (!file || !currentWorkspace) return;
         try {
             const text = await file.text();
             const json = JSON.parse(text);
-            const info = json.info || {};
-            const collectionName = info.name || file.name.replace(/\.json$/, '');
-            const items: any[] = json.item || [];
-
-            const colRes = await collectionApi.create({ name: collectionName, workspace: currentWorkspace._id });
-            const collection = colRes.data;
-            if (!collection) throw new Error('Failed to create collection');
-
-            const flatRequests: any[] = [];
-            const flatten = (arr: any[]) => {
-                arr.forEach(item => {
-                    if (item.item) flatten(item.item);
-                    else flatRequests.push(item);
-                });
-            };
-            flatten(items);
-
-            for (const item of flatRequests) {
-                const req = item.request || {};
-                const method = (req.method || 'GET').toUpperCase();
-                const rawUrl = typeof req.url === 'string' ? req.url : (req.url?.raw || '');
-                const headers = (req.header || []).map((h: any) => ({ key: h.key, value: h.value, enabled: !h.disabled }));
-                const queryParams = (req.url?.query || []).map((q: any) => ({ key: q.key, value: q.value, enabled: !q.disabled }));
-                let body: { type: 'none' | 'json' | 'raw' | 'form-data'; content: any } = { type: 'none', content: null };
-                if (req.body?.mode === 'raw') {
-                    const lang = req.body?.options?.raw?.language || 'text';
-                    body = { type: lang === 'json' ? 'json' : 'raw', content: req.body.raw || '' };
-                } else if (req.body?.mode === 'formdata') {
-                    body = { type: 'form-data', content: (req.body.formdata || []).map((f: any) => ({ key: f.key, value: f.value, enabled: !f.disabled })) };
-                }
-                await requestApi.create({
-                    name: item.name || 'Imported Request',
-                    method, url: rawUrl, collection: collection._id,
-                    workspace: currentWorkspace._id,
-                    headers, queryParams, body, auth: { type: 'none' },
-                });
-            }
-
-            queryClient.invalidateQueries({ queryKey: ['collections'] });
-            queryClient.invalidateQueries({ queryKey: ['requests'] });
-            setExpandedCollections(prev => new Set([...prev, collection._id]));
-            toast.success(`Imported "${collectionName}"`);
+            await importPostmanCollection(json, file.name);
         } catch (err: any) {
             setImportError(err.message || 'Invalid JSON file');
             toast.error(err.message || 'Import failed');
         } finally {
             if (importInputRef.current) importInputRef.current.value = '';
         }
+    };
+
+    const handlePasteImport = async () => {
+        if (!pasteContent.trim() || !currentWorkspace) return;
+        setImportError(null);
+
+        try {
+            // Check if it's a cURL command
+            if (isCurlCommand(pasteContent)) {
+                const parsed = parseCurl(pasteContent);
+                if (!parsed) {
+                    throw new Error('Failed to parse cURL command');
+                }
+
+                // Create a new collection for the cURL import
+                const colRes = await collectionApi.create({
+                    name: 'Imported from cURL',
+                    workspace: currentWorkspace._id
+                });
+                const collection = colRes.data;
+                if (!collection) throw new Error('Failed to create collection');
+
+                // Create the request
+                await requestApi.create({
+                    name: 'Imported Request',
+                    method: parsed.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+                    url: parsed.url,
+                    collection: collection._id,
+                    workspace: currentWorkspace._id,
+                    headers: parsed.headers,
+                    queryParams: [],
+                    body: parsed.body,
+                    auth: parsed.auth,
+                });
+
+                queryClient.invalidateQueries({ queryKey: ['collections'] });
+                queryClient.invalidateQueries({ queryKey: ['requests'] });
+                setExpandedCollections(prev => new Set([...prev, collection._id]));
+                toast.success('cURL imported successfully');
+            } else {
+                // Try to parse as JSON
+                const json = JSON.parse(pasteContent);
+                await importPostmanCollection(json, 'Pasted Collection');
+            }
+
+            setShowPasteDialog(false);
+            setPasteContent('');
+        } catch (err: any) {
+            setImportError(err.message || 'Invalid content');
+            toast.error(err.message || 'Import failed');
+        }
+    };
+
+    const importPostmanCollection = async (json: any, fileName: string) => {
+        if (!currentWorkspace) return;
+
+        const info = json.info || {};
+        const collectionName = info.name || fileName.replace(/\.json$/, '');
+        const items: any[] = json.item || [];
+
+        const colRes = await collectionApi.create({ name: collectionName, workspace: currentWorkspace._id });
+        const collection = colRes.data;
+        if (!collection) throw new Error('Failed to create collection');
+
+        const flatRequests: any[] = [];
+        const flatten = (arr: any[]) => {
+            arr.forEach(item => {
+                if (item.item) flatten(item.item);
+                else flatRequests.push(item);
+            });
+        };
+        flatten(items);
+
+        for (const item of flatRequests) {
+            const req = item.request || {};
+            const method = (req.method || 'GET').toUpperCase();
+            const rawUrl = typeof req.url === 'string' ? req.url : (req.url?.raw || '');
+            const headers = (req.header || []).map((h: any) => ({ key: h.key, value: h.value, enabled: !h.disabled }));
+            const queryParams = (req.url?.query || []).map((q: any) => ({ key: q.key, value: q.value, enabled: !q.disabled }));
+            let body: { type: 'none' | 'json' | 'raw' | 'form-data'; content: any } = { type: 'none', content: null };
+            if (req.body?.mode === 'raw') {
+                const lang = req.body?.options?.raw?.language || 'text';
+                body = { type: lang === 'json' ? 'json' : 'raw', content: req.body.raw || '' };
+            } else if (req.body?.mode === 'formdata') {
+                body = { type: 'form-data', content: (req.body.formdata || []).map((f: any) => ({ key: f.key, value: f.value, enabled: !f.disabled })) };
+            }
+            await requestApi.create({
+                name: item.name || 'Imported Request',
+                method, url: rawUrl, collection: collection._id,
+                workspace: currentWorkspace._id,
+                headers, queryParams, body, auth: { type: 'none' },
+            });
+        }
+
+        queryClient.invalidateQueries({ queryKey: ['collections'] });
+        queryClient.invalidateQueries({ queryKey: ['requests'] });
+        setExpandedCollections(prev => new Set([...prev, collection._id]));
+        toast.success(`Imported "${collectionName}"`);
     };
 
     const getMethodColor = (method: string) => {
@@ -174,6 +237,20 @@ export default function Sidebar() {
         };
         return colors[method] || 'text-gray-400';
     };
+
+    // Close import menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (importMenuRef.current && !importMenuRef.current.contains(event.target as Node)) {
+                setShowImportMenu(false);
+            }
+        };
+
+        if (showImportMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [showImportMenu]);
 
     return (
         <div className="flex h-full flex-col bg-gray-800">
@@ -226,13 +303,40 @@ export default function Sidebar() {
                         <div className="mb-2 flex items-center justify-between">
                             <h3 className="text-xs font-semibold uppercase text-gray-400">Collections</h3>
                             <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => importInputRef.current?.click()}
-                                    className="rounded p-1 hover:bg-gray-700 transition-colors text-gray-400 hover:text-gray-200"
-                                    title="Import Postman JSON"
-                                >
-                                    <Upload className="h-3.5 w-3.5" />
-                                </button>
+                                <div className="relative" ref={importMenuRef}>
+                                    <button
+                                        onClick={() => setShowImportMenu(!showImportMenu)}
+                                        className="rounded p-1 hover:bg-gray-700 transition-colors text-gray-400 hover:text-gray-200"
+                                        title="Import"
+                                    >
+                                        <Upload className="h-3.5 w-3.5" />
+                                    </button>
+
+                                    {showImportMenu && (
+                                        <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-gray-700 bg-gray-800 shadow-xl z-50">
+                                            <button
+                                                onClick={() => {
+                                                    setShowImportMenu(false);
+                                                    setShowPasteDialog(true);
+                                                }}
+                                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors rounded-t-lg"
+                                            >
+                                                <Terminal className="h-4 w-4" />
+                                                <span>Paste cURL/JSON</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setShowImportMenu(false);
+                                                    importInputRef.current?.click();
+                                                }}
+                                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors rounded-b-lg"
+                                            >
+                                                <FileJson className="h-4 w-4" />
+                                                <span>Upload from Device</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                                 <button onClick={() => setShowNewCollection(true)} className="rounded p-1 hover:bg-gray-700 transition-colors" title="New Collection">
                                     <Plus className="h-4 w-4" />
                                 </button>
@@ -318,6 +422,61 @@ export default function Sidebar() {
                     <div className="p-4 text-center text-sm text-gray-500">Select a workspace to view collections</div>
                 )}
             </div>
+
+            {/* Paste Dialog Modal */}
+            {showPasteDialog && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-2xl mx-4 shadow-2xl">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+                            <h3 className="text-sm font-semibold text-gray-200">Import cURL or JSON</h3>
+                            <button
+                                onClick={() => {
+                                    setShowPasteDialog(false);
+                                    setPasteContent('');
+                                    setImportError(null);
+                                }}
+                                className="text-gray-400 hover:text-gray-200 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <div className="p-4">
+                            <textarea
+                                value={pasteContent}
+                                onChange={(e) => setPasteContent(e.target.value)}
+                                placeholder="Paste your cURL command or Postman JSON here..."
+                                className="w-full h-64 rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-300 placeholder-gray-600 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 font-mono resize-none"
+                                autoFocus
+                            />
+
+                            {importError && (
+                                <p className="mt-2 text-xs text-red-400">{importError}</p>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-700">
+                            <button
+                                onClick={() => {
+                                    setShowPasteDialog(false);
+                                    setPasteContent('');
+                                    setImportError(null);
+                                }}
+                                className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handlePasteImport}
+                                disabled={!pasteContent.trim()}
+                                className="px-4 py-2 text-sm font-medium bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Import
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

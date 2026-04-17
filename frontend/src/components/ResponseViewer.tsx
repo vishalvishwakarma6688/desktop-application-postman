@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { GitCompare } from 'lucide-react';
+import { DiffViewer } from './diff/DiffViewer';
+import type { ApiResponseData } from '../types/diff';
 
 interface ResponseViewerProps {
     response: any;
@@ -7,6 +10,7 @@ interface ResponseViewerProps {
 export default function ResponseViewer({ response }: ResponseViewerProps) {
     const [activeTab, setActiveTab] = useState<'body' | 'headers' | 'cookies'>('body');
     const [bodyView, setBodyView] = useState<'pretty' | 'raw'>('pretty');
+    const [showDiffViewer, setShowDiffViewer] = useState(false);
 
     if (!response) {
         return (
@@ -46,8 +50,30 @@ export default function ResponseViewer({ response }: ResponseViewerProps) {
         }
     };
 
+    const convertToApiResponseData = (response: any): ApiResponseData => {
+        return {
+            id: response.historyId || `response-${Date.now()}`,
+            requestId: response.requestId,
+            timestamp: Date.now(),
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers || {},
+            body: response.data,
+            contentType: 'application/json',
+            duration: response.executionTime,
+        };
+    };
+
     return (
         <div className="flex h-full flex-col bg-gray-900">
+            {/* Diff Viewer Modal */}
+            {showDiffViewer && response && (
+                <DiffViewer
+                    initialResponse={convertToApiResponseData(response)}
+                    onClose={() => setShowDiffViewer(false)}
+                />
+            )}
+
             {/* Response Header */}
             <div className="border-b border-gray-700 px-4 py-3">
                 <div className="flex items-center justify-between">
@@ -72,28 +98,40 @@ export default function ResponseViewer({ response }: ResponseViewerProps) {
                         </div>
                     </div>
 
-                    {activeTab === 'body' && (
-                        <div className="flex gap-1 rounded bg-gray-800 p-1">
-                            <button
-                                onClick={() => setBodyView('pretty')}
-                                className={`rounded px-3 py-1 text-xs font-medium transition-colors ${bodyView === 'pretty'
+                    <div className="flex items-center gap-2">
+                        {/* Compare Button */}
+                        <button
+                            onClick={() => setShowDiffViewer(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 rounded transition-colors"
+                            title="Compare with another response"
+                        >
+                            <GitCompare className="h-4 w-4" />
+                            Compare
+                        </button>
+
+                        {activeTab === 'body' && (
+                            <div className="flex gap-1 rounded bg-gray-800 p-1">
+                                <button
+                                    onClick={() => setBodyView('pretty')}
+                                    className={`rounded px-3 py-1 text-xs font-medium transition-colors ${bodyView === 'pretty'
                                         ? 'bg-gray-700 text-white'
                                         : 'text-gray-400 hover:text-gray-300'
-                                    }`}
-                            >
-                                Pretty
-                            </button>
-                            <button
-                                onClick={() => setBodyView('raw')}
-                                className={`rounded px-3 py-1 text-xs font-medium transition-colors ${bodyView === 'raw'
+                                        }`}
+                                >
+                                    Pretty
+                                </button>
+                                <button
+                                    onClick={() => setBodyView('raw')}
+                                    className={`rounded px-3 py-1 text-xs font-medium transition-colors ${bodyView === 'raw'
                                         ? 'bg-gray-700 text-white'
                                         : 'text-gray-400 hover:text-gray-300'
-                                    }`}
-                            >
-                                Raw
-                            </button>
-                        </div>
-                    )}
+                                        }`}
+                                >
+                                    Raw
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -105,8 +143,8 @@ export default function ResponseViewer({ response }: ResponseViewerProps) {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-3 text-sm font-medium capitalize transition-colors ${activeTab === tab
-                                    ? 'border-b-2 border-orange-500 text-orange-500'
-                                    : 'text-gray-400 hover:text-gray-300'
+                                ? 'border-b-2 border-orange-500 text-orange-500'
+                                : 'text-gray-400 hover:text-gray-300'
                                 }`}
                         >
                             {tab}

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Send, Clock, CheckCircle, XCircle, Copy, Check, X, Search } from 'lucide-react';
+import { Send, Clock, CheckCircle, XCircle, Copy, Check, X, Search, GitCompare } from 'lucide-react';
+import { DiffViewer } from '../diff/DiffViewer';
+import type { ApiResponseData } from '../../types/diff';
 
 interface Props {
     response: any;
@@ -20,6 +22,7 @@ export default function ResponsePanel({ response, isSending, onCancel, testResul
     const [copied, setCopied] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showDiffViewer, setShowDiffViewer] = useState(false);
     const bodyRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,8 +82,30 @@ export default function ResponsePanel({ response, isSending, onCancel, testResul
         }).join('');
     };
 
+    const convertToApiResponseData = (response: any): ApiResponseData => {
+        return {
+            id: response.historyId || `response-${Date.now()}`,
+            requestId: response.requestId,
+            timestamp: Date.now(),
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers || {},
+            body: response.data,
+            contentType: 'application/json',
+            duration: response.executionTime,
+        };
+    };
+
     return (
         <div className="flex flex-1 flex-col overflow-hidden">
+            {/* Diff Viewer Modal */}
+            {showDiffViewer && response && !response.error && (
+                <DiffViewer
+                    initialResponse={convertToApiResponseData(response)}
+                    onClose={() => setShowDiffViewer(false)}
+                />
+            )}
+
             {/* Header bar */}
             <div className="flex items-center justify-between border-b border-t border-gray-800 px-6 py-2 shrink-0 gap-4 bg-gray-900">
                 <div className="flex items-center gap-4">
@@ -107,6 +132,16 @@ export default function ResponsePanel({ response, isSending, onCancel, testResul
 
                 {response && !response.error && (
                     <div className="flex items-center gap-2">
+                        {/* Compare Button */}
+                        <button
+                            onClick={() => setShowDiffViewer(true)}
+                            className="flex items-center gap-1.5 rounded border border-gray-700 px-2.5 py-1 text-xs text-gray-400 hover:bg-gray-800 transition-colors"
+                            title="Compare with another response"
+                        >
+                            <GitCompare className="h-3.5 w-3.5" />
+                            Compare
+                        </button>
+
                         <div className="flex rounded border border-gray-700 overflow-hidden text-xs">
                             {(['pretty', 'raw', 'headers', 'tests'] as const).map((v) => (
                                 <button
