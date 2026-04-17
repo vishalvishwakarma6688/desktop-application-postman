@@ -107,7 +107,7 @@ export default function Download() {
                                 <span className="text-sm font-semibold text-orange-400">Ubuntu / Debian (.deb)</span>
                                 <button
                                     onClick={() => {
-                                        navigator.clipboard.writeText('wget -O postman-like.deb https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.2/Postman-Like-linux.deb && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y');
+                                        navigator.clipboard.writeText('wget -O postman-like.deb https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.deb && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y');
                                     }}
                                     className="text-xs text-gray-400 hover:text-orange-400 transition-colors"
                                 >
@@ -115,7 +115,7 @@ export default function Download() {
                                 </button>
                             </div>
                             <code className="text-xs text-gray-300 break-all block">
-                                wget -O postman-like.deb https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.2/Postman-Like-linux.deb && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y
+                                wget -O postman-like.deb https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.deb && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y
                             </code>
                         </div>
 
@@ -125,7 +125,7 @@ export default function Download() {
                                 <span className="text-sm font-semibold text-blue-400">Universal Linux (AppImage)</span>
                                 <button
                                     onClick={() => {
-                                        navigator.clipboard.writeText('wget -O postman-like.AppImage https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.2/Postman-Like-linux.AppImage && chmod +x postman-like.AppImage && ./postman-like.AppImage');
+                                        navigator.clipboard.writeText('wget -O postman-like.AppImage https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.AppImage && chmod +x postman-like.AppImage && ./postman-like.AppImage');
                                     }}
                                     className="text-xs text-gray-400 hover:text-blue-400 transition-colors"
                                 >
@@ -133,7 +133,7 @@ export default function Download() {
                                 </button>
                             </div>
                             <code className="text-xs text-gray-300 break-all block">
-                                wget -O postman-like.AppImage https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.2/Postman-Like-linux.AppImage && chmod +x postman-like.AppImage && ./postman-like.AppImage
+                                wget -O postman-like.AppImage https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.AppImage && chmod +x postman-like.AppImage && ./postman-like.AppImage
                             </code>
                         </div>
                     </div>
