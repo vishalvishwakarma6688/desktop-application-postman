@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -68,9 +71,7 @@ jobs:
         with:
           name: release-${{ matrix.platform }}
           path: |
-              frontend/release/*.exe
-              frontend/release/*.AppImage
-              frontend/release/*.deb
+              frontend/release/**
           if-no-files-found: error
 
   # 👇 ADD THIS PART

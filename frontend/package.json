@@ -69,13 +69,7 @@
     "appId": "com.postmanlike.app",
     "productName": "PostmanLike",
     "artifactName": "Postman-Like-${os}.${ext}",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "vishalvishwakarma6688",
-        "repo": "desktop-application-postman"
-      }
-    ],
+    "publish": null,
     "copyright": "Copyright © 2025",
     "asar": true,
     "directories": {
