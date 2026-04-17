@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, GitCompare, AlertCircle } from 'lucide-react';
 import { DiffViewerProvider, useDiffViewer } from '../../contexts/DiffViewerContext';
 import { SideBySidePanel } from './SideBySidePanel';

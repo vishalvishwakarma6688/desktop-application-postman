@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import type { ApiResponseData, Change } from '../../types/diff';
 

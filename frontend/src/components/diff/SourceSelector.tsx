@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, FileText, X } from 'lucide-react';
 import type { ApiResponseData, ComparisonSource } from '../../types/diff';
 import type { RequestHistory } from '../../types';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Copy, Check, Code, Settings, Cookie } from 'lucide-react';
+import { X, Copy, Check, Settings, Cookie } from 'lucide-react';
 import { Request } from '@/types';
 import { generateCodeSnippet, type CodeLanguage } from '@/utils/codeGenerator';
 import toast from 'react-hot-toast';

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { ResponsePanel } from './ResponsePanel';
 import type { ApiResponseData, DiffResult } from '../../types/diff';
 
