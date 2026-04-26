@@ -256,7 +256,7 @@ export default function Sidebar() {
         <div className="flex h-full flex-col bg-gray-800">
             {/* Workspace Selector */}
             <div className="border-b border-gray-700 p-3">
-                <label className="mb-1.5 block text-xs font-medium text-gray-400 uppercase">Workspace</label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-400 uppercase">Workspace - testing</label>
                 <Select
                     value={currentWorkspace?._id || ''}
                     onValueChange={(value) => {
