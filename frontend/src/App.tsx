@@ -25,10 +25,10 @@ function App() {
     const [pathname, setPathname] = useState(window.location.pathname);
     const [showPalette, setShowPalette] = useState(false);
 
-    // Fetch user data on app initialization if token exists
+    // Fetch user data on app initialization if token exists but user object is missing
     useEffect(() => {
         const fetchUserData = async () => {
-            if (token && !isAuthenticated) {
+            if (token) {
                 try {
                     const response = await authApi.getMe();
                     if (response.success && response.data) {

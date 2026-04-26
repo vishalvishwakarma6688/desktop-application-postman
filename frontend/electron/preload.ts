@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         }
     },
     receive: (channel: string, func: (...args: any[]) => void) => {
-        const validChannels = ['fromMain', 'oauth:callback'];
+        const validChannels = ['fromMain', 'oauth:callback', 'updater:log'];
         if (validChannels.includes(channel)) {
             ipcRenderer.on(channel, (_event, ...args) => func(...args));
         }

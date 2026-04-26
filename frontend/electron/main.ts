@@ -92,28 +92,33 @@ app.whenReady().then(() => {
     createWindow();
 
     if (app.isPackaged) {
+        const sendLog = (msg: string) => {
+            console.log(msg); // main process terminal
+            mainWindow?.webContents.send('updater:log', msg); // DevTools console
+        };
+
         autoUpdater.on('checking-for-update', () => {
-            console.log('Checking for update...');
+            sendLog('[AutoUpdater] Checking for update...');
         });
 
         autoUpdater.on('update-available', () => {
-            console.log('Update available');
+            sendLog('[AutoUpdater] Update available — downloading...');
         });
 
         autoUpdater.on('update-not-available', () => {
-            console.log('No updates');
+            sendLog('[AutoUpdater] App is up to date.');
         });
 
         autoUpdater.on('error', (err) => {
-            console.error('Update error:', err);
+            sendLog(`[AutoUpdater] Error: ${err?.message || err}`);
         });
 
         autoUpdater.on('download-progress', (progressObj) => {
-            console.log(`Downloading: ${progressObj.percent}%`);
+            sendLog(`[AutoUpdater] Downloading: ${Math.round(progressObj.percent)}% (${Math.round(progressObj.bytesPerSecond / 1024)} KB/s)`);
         });
 
         autoUpdater.on('update-downloaded', () => {
-            console.log('Update downloaded');
+            sendLog('[AutoUpdater] Update downloaded — restarting...');
             autoUpdater.quitAndInstall();
         });
 
