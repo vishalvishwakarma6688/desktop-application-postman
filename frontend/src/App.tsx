@@ -8,6 +8,7 @@ import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import CommandPalette from './components/CommandPalette';
 import { useTabStore } from './store/useTabStore';
 import { requestApi } from './features/requests/api';
+import { authApi } from './features/auth/api';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -19,10 +20,37 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated, token, setAuth, logout, isLoading, setLoading } = useAuthStore();
     const { tabs, activeTabId, updateTab } = useTabStore();
     const [pathname, setPathname] = useState(window.location.pathname);
     const [showPalette, setShowPalette] = useState(false);
+
+    // Fetch user data on app initialization if token exists
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (token && !isAuthenticated) {
+                try {
+                    const response = await authApi.getMe();
+                    if (response.success && response.data) {
+                        setAuth(response.data, token);
+                    } else {
+                        // Token is invalid, logout
+                        logout();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user data:', error);
+                    // Token is invalid, logout
+                    logout();
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, []); // Run only once on mount
 
     useEffect(() => {
         const onPop = () => setPathname(window.location.pathname);
@@ -77,6 +105,18 @@ function App() {
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
     }, [tabs, activeTabId, updateTab]);
+
+    // Show loading state while fetching user data
+    if (isLoading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-gray-900 text-gray-100">
+                <div className="text-center">
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-orange-500 border-r-transparent mb-4"></div>
+                    <p className="text-sm text-gray-400">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <QueryClientProvider client={queryClient}>

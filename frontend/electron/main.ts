@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, globalShortcut } from 'electron';
 import pkg from 'electron-updater';
 import * as path from 'path';
 import { Menu } from 'electron';
@@ -48,9 +48,13 @@ const createWindow = () => {
 
     if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
         mainWindow.loadURL('http://localhost:5173');
+        // Open DevTools by default in development
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        // For testing: Open DevTools in production builds too
+        // Comment this line out for final release
+        mainWindow.webContents.openDevTools();
     }
 
     mainWindow.once('ready-to-show', () => mainWindow?.show());
@@ -62,6 +66,27 @@ app.whenReady().then(() => {
 
     ipcMain.on('oauth:open', (_event, url: string) => {
         shell.openExternal(url);
+    });
+
+    // Register global shortcut to toggle DevTools (F12 or Ctrl+Shift+I)
+    globalShortcut.register('F12', () => {
+        if (mainWindow) {
+            if (mainWindow.webContents.isDevToolsOpened()) {
+                mainWindow.webContents.closeDevTools();
+            } else {
+                mainWindow.webContents.openDevTools();
+            }
+        }
+    });
+
+    globalShortcut.register('CommandOrControl+Shift+I', () => {
+        if (mainWindow) {
+            if (mainWindow.webContents.isDevToolsOpened()) {
+                mainWindow.webContents.closeDevTools();
+            } else {
+                mainWindow.webContents.openDevTools();
+            }
+        }
     });
 
     createWindow();
@@ -124,4 +149,9 @@ if (!gotLock) app.quit();
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
+});
+
+// Cleanup global shortcuts when app quits
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
 });
