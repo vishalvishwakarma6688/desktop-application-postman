@@ -65,16 +65,34 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_BACKEND_URL: https://desktop-application-postman.onrender.com
-      
+
+      # Only collect the final distributable files, not internal Electron files
+      - name: Collect Windows artifacts
+        if: matrix.platform == 'win'
+        run: |
+          mkdir -p dist-artifacts
+          cp frontend/release/*.exe dist-artifacts/ 2>/dev/null || true
+          cp frontend/release/*.exe.blockmap dist-artifacts/ 2>/dev/null || true
+          cp frontend/release/latest.yml dist-artifacts/ 2>/dev/null || true
+        shell: bash
+
+      - name: Collect Linux artifacts
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p dist-artifacts
+          cp frontend/release/*.AppImage dist-artifacts/ 2>/dev/null || true
+          cp frontend/release/*.deb dist-artifacts/ 2>/dev/null || true
+          cp frontend/release/*.rpm dist-artifacts/ 2>/dev/null || true
+          cp frontend/release/latest-linux.yml dist-artifacts/ 2>/dev/null || true
+        shell: bash
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.platform }}
-          path: |
-              frontend/release/**
+          path: dist-artifacts/
           if-no-files-found: error
 
-  # 👇 ADD THIS PART
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -83,21 +101,27 @@ jobs:
       contents: write
 
     steps:
-      - name: Download artifacts
+      - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
-          merge-multiple: true
+          name: release-win
+          path: artifacts/
 
-      - name: Debug files
-        run: ls -R artifacts
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-linux
+          path: artifacts/
+
+      - name: List release files
+        run: ls -la artifacts/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: artifacts/**/*
+          files: artifacts/*
           draft: false
           prerelease: false
           generate_release_notes: true
