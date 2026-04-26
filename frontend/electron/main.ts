@@ -13,6 +13,9 @@ const __dirname = path.dirname(__filename);
 
 Menu.setApplicationMenu(null);
 
+// Disable auto-download so we can ask the user first
+autoUpdater.autoDownload = false;
+
 let mainWindow: BrowserWindow | null = null;
 
 if (process.defaultApp) {
@@ -25,9 +28,64 @@ if (process.defaultApp) {
 
 const handleOAuthCallback = (url: string) => {
     if (!mainWindow) return;
-    // Forward the deep-link URL to the renderer so it can extract the token
     mainWindow.webContents.send('oauth:callback', url);
     mainWindow.focus();
+};
+
+// Send a message to the renderer — safe to call any time
+const sendToRenderer = (channel: string, ...args: any[]) => {
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+        mainWindow.webContents.send(channel, ...args);
+    }
+};
+
+const setupAutoUpdater = () => {
+    autoUpdater.on('checking-for-update', () => {
+        console.log('[AutoUpdater] Checking for update...');
+        sendToRenderer('updater:log', '[AutoUpdater] Checking for update...');
+    });
+
+    autoUpdater.on('update-available', (info) => {
+        const msg = `[AutoUpdater] Update available: v${info.version}`;
+        console.log(msg);
+        sendToRenderer('updater:log', msg);
+        // Ask the user if they want to download
+        sendToRenderer('updater:update-available', { version: info.version });
+    });
+
+    autoUpdater.on('update-not-available', (info) => {
+        const msg = `[AutoUpdater] App is up to date (v${info.version})`;
+        console.log(msg);
+        sendToRenderer('updater:log', msg);
+    });
+
+    autoUpdater.on('error', (err) => {
+        const msg = `[AutoUpdater] Error: ${err?.message || err}`;
+        console.error(msg);
+        sendToRenderer('updater:log', msg);
+    });
+
+    autoUpdater.on('download-progress', (progressObj) => {
+        const msg = `[AutoUpdater] Downloading: ${Math.round(progressObj.percent)}% (${Math.round(progressObj.bytesPerSecond / 1024)} KB/s)`;
+        console.log(msg);
+        sendToRenderer('updater:log', msg);
+        sendToRenderer('updater:download-progress', { percent: Math.round(progressObj.percent) });
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+        const msg = `[AutoUpdater] Update v${info.version} downloaded — ready to install`;
+        console.log(msg);
+        sendToRenderer('updater:log', msg);
+        sendToRenderer('updater:update-downloaded', { version: info.version });
+    });
+
+    // Wait 3 seconds after window is ready before checking — ensures renderer is listening
+    setTimeout(() => {
+        console.log('[AutoUpdater] Starting update check...');
+        autoUpdater.checkForUpdates().catch((err) => {
+            console.error('[AutoUpdater] checkForUpdates failed:', err?.message || err);
+        });
+    }, 3000);
 };
 
 const createWindow = () => {
@@ -48,7 +106,6 @@ const createWindow = () => {
 
     if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
         mainWindow.loadURL('http://localhost:5173');
-        // Open DevTools by default in development
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -57,7 +114,14 @@ const createWindow = () => {
         mainWindow.webContents.openDevTools();
     }
 
-    mainWindow.once('ready-to-show', () => mainWindow?.show());
+    mainWindow.once('ready-to-show', () => {
+        mainWindow?.show();
+        // Start updater only after window is fully shown and renderer is ready
+        if (app.isPackaged) {
+            setupAutoUpdater();
+        }
+    });
+
     mainWindow.on('closed', () => { mainWindow = null; });
 };
 
@@ -66,6 +130,21 @@ app.whenReady().then(() => {
 
     ipcMain.on('oauth:open', (_event, url: string) => {
         shell.openExternal(url);
+    });
+
+    // Handle user clicking "Download Update" in the UI
+    ipcMain.on('updater:start-download', () => {
+        console.log('[AutoUpdater] User confirmed download — starting...');
+        autoUpdater.downloadUpdate().catch((err) => {
+            console.error('[AutoUpdater] Download failed:', err?.message || err);
+            sendToRenderer('updater:log', `[AutoUpdater] Download failed: ${err?.message || err}`);
+        });
+    });
+
+    // Handle user clicking "Install & Restart" in the UI
+    ipcMain.on('updater:install', () => {
+        console.log('[AutoUpdater] User confirmed install — restarting...');
+        autoUpdater.quitAndInstall();
     });
 
     // Register global shortcut to toggle DevTools (F12 or Ctrl+Shift+I)
@@ -90,40 +169,6 @@ app.whenReady().then(() => {
     });
 
     createWindow();
-
-    if (app.isPackaged) {
-        const sendLog = (msg: string) => {
-            console.log(msg); // main process terminal
-            mainWindow?.webContents.send('updater:log', msg); // DevTools console
-        };
-
-        autoUpdater.on('checking-for-update', () => {
-            sendLog('[AutoUpdater] Checking for update...');
-        });
-
-        autoUpdater.on('update-available', () => {
-            sendLog('[AutoUpdater] Update available — downloading...');
-        });
-
-        autoUpdater.on('update-not-available', () => {
-            sendLog('[AutoUpdater] App is up to date.');
-        });
-
-        autoUpdater.on('error', (err) => {
-            sendLog(`[AutoUpdater] Error: ${err?.message || err}`);
-        });
-
-        autoUpdater.on('download-progress', (progressObj) => {
-            sendLog(`[AutoUpdater] Downloading: ${Math.round(progressObj.percent)}% (${Math.round(progressObj.bytesPerSecond / 1024)} KB/s)`);
-        });
-
-        autoUpdater.on('update-downloaded', () => {
-            sendLog('[AutoUpdater] Update downloaded — restarting...');
-            autoUpdater.quitAndInstall();
-        });
-
-        autoUpdater.checkForUpdatesAndNotify();
-    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

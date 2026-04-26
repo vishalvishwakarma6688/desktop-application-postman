@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import CommandPalette from './components/CommandPalette';
+import UpdateNotification from './components/UpdateNotification';
 import { useTabStore } from './store/useTabStore';
 import { requestApi } from './features/requests/api';
 import { authApi } from './features/auth/api';
@@ -126,6 +127,8 @@ function App() {
                     : isAuthenticated ? <DashboardPage /> : <LoginPage />
                 }
                 {showPalette && isAuthenticated && <CommandPalette onClose={() => setShowPalette(false)} />}
+                {/* Update notification popup — shown when a new version is available */}
+                <UpdateNotification />
                 <Toaster
                     position="bottom-center"
                     toastOptions={{
