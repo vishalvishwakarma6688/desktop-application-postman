@@ -13,8 +13,15 @@ const __dirname = path.dirname(__filename);
 
 Menu.setApplicationMenu(null);
 
-// Disable auto-download so we can ask the user first
+// Configure auto-updater to use GitHub releases
 autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
+// Point to GitHub releases for update checks
+autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'vishalvishwakarma6688',
+    repo: 'desktop-application-postman',
+});
 
 let mainWindow: BrowserWindow | null = null;
 
