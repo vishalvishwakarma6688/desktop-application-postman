@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import HowItWorks from '@/components/HowItWorks';
+import SecurityPrivacy from '@/components/SecurityPrivacy';
 import Download from '@/components/Download';
 import Testimonials from '@/components/Testimonials';
 import Footer from '@/components/Footer';
@@ -17,6 +18,7 @@ function HomePage() {
             <Hero />
             <Features />
             <HowItWorks />
+            <SecurityPrivacy />
             <Download />
             <Testimonials />
         </>

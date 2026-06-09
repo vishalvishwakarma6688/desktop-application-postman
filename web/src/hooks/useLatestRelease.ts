@@ -3,11 +3,17 @@ import { useEffect, useState } from 'react';
 export interface ReleaseAsset {
     name: string;
     browser_download_url: string;
+    size?: number;
+    created_at?: string;
+    digest?: string | null;
 }
 
 export interface GitHubRelease {
     tag_name: string;
     assets: ReleaseAsset[];
+    html_url: string;
+    published_at: string | null;
+    body: string | null;
 }
 
 export interface DownloadLinks {
@@ -17,7 +23,16 @@ export interface DownloadLinks {
     version: string;
 }
 
+export interface ReleaseDetails {
+    version: string;
+    publishedAt: string | null;
+    releaseNotesUrl: string;
+    releaseNotes: string | null;
+    assets: ReleaseAsset[];
+}
+
 const GITHUB_API_URL = 'https://api.github.com/repos/vishalvishwakarma6688/desktop-application-postman/releases/latest';
+const GITHUB_RELEASES_URL = 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases';
 
 // Fallback URLs in case API fails
 const FALLBACK_LINKS: DownloadLinks = {
@@ -25,6 +40,14 @@ const FALLBACK_LINKS: DownloadLinks = {
     linuxAppImage: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.AppImage',
     linuxDeb: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.deb',
     version: 'v1.3.3',
+};
+
+const FALLBACK_RELEASE_DETAILS: ReleaseDetails = {
+    version: FALLBACK_LINKS.version,
+    publishedAt: null,
+    releaseNotesUrl: GITHUB_RELEASES_URL,
+    releaseNotes: null,
+    assets: [],
 };
 
 const getDownloadLinks = (assets: ReleaseAsset[], version: string): DownloadLinks => {
@@ -48,6 +71,7 @@ const getDownloadLinks = (assets: ReleaseAsset[], version: string): DownloadLink
 
 export function useLatestRelease() {
     const [downloadLinks, setDownloadLinks] = useState<DownloadLinks>(FALLBACK_LINKS);
+    const [releaseDetails, setReleaseDetails] = useState<ReleaseDetails>(FALLBACK_RELEASE_DETAILS);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -69,12 +93,20 @@ export function useLatestRelease() {
                 }
 
                 setDownloadLinks(links);
+                setReleaseDetails({
+                    version: data.tag_name,
+                    publishedAt: data.published_at,
+                    releaseNotesUrl: data.html_url,
+                    releaseNotes: data.body,
+                    assets: data.assets,
+                });
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch latest release:', err);
                 setError(err instanceof Error ? err.message : 'Unknown error');
                 // Keep fallback links on error
                 setDownloadLinks(FALLBACK_LINKS);
+                setReleaseDetails(FALLBACK_RELEASE_DETAILS);
             } finally {
                 setLoading(false);
             }
@@ -83,5 +115,5 @@ export function useLatestRelease() {
         fetchLatestRelease();
     }, []);
 
-    return { downloadLinks, loading, error };
+    return { downloadLinks, releaseDetails, loading, error };
 }

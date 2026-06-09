@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Monitor, Terminal, Apple, Download as DownloadIcon } from 'lucide-react';
 import DownloadButton from './DownloadButton';
+import ReleaseVerification from './ReleaseVerification';
 import { useLatestRelease } from '@/hooks/useLatestRelease';
 
 const PLATFORMS = [
@@ -36,7 +37,7 @@ const PLATFORMS = [
 
 export default function Download() {
     const [visible, setVisible] = useState(false);
-    const { downloadLinks } = useLatestRelease();
+    const { downloadLinks, releaseDetails, loading } = useLatestRelease();
 
     useEffect(() => {
         setVisible(true);
@@ -65,6 +66,8 @@ export default function Download() {
                         Free forever. No signup required. Start testing APIs in seconds.
                     </p>
                 </div>
+
+                <ReleaseVerification release={releaseDetails} loading={loading} />
 
                 {/* Platform cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">

@@ -5,6 +5,7 @@ const FOOTER_LINKS = {
     Product: [
         { label: 'Features', href: '#features', external: false },
         { label: 'How it Works', href: '#how-it-works', external: false },
+        { label: 'Security & Privacy', href: '#security', external: false },
         { label: 'Download', href: '#download', external: false },
     ],
     Resources: [
