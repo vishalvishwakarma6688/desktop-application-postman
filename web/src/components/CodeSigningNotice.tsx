@@ -10,9 +10,8 @@ export default function CodeSigningNotice({ scrolled }: CodeSigningNoticeProps) 
     return (
         <aside
             aria-label="Windows download security notice"
-            className={`border-b border-amber-400/20 text-amber-50 transition-all duration-300 ${
-                scrolled ? 'bg-gray-950/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-            }`}
+            className={`border-b border-amber-400/20 text-amber-50 transition-all duration-300 ${scrolled ? 'bg-gray-950/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+                }`}
         >
             <div className="max-w-7xl mx-auto px-4 py-2.5 sm:px-6 lg:px-8">
                 <div className="flex items-start gap-3">

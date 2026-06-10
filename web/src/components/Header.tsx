@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, X, Zap } from 'lucide-react';
 import CodeSigningNotice from './CodeSigningNotice';
 
@@ -14,13 +14,20 @@ export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 20);
+        const onScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+
         window.addEventListener('scroll', onScroll);
+        onScroll();
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-gray-950/95 backdrop-blur-md shadow-lg' : 'bg-transparent'}`}>
+        <header
+            className={`relative z-50 transition-all duration-300 ${scrolled ? 'bg-gray-950/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+                }`}
+        >
             <CodeSigningNotice scrolled={scrolled} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">

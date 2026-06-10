@@ -32,7 +32,7 @@ export default function Hero() {
     }, [displayed, deleting, wordIdx]);
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-36 pb-24">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8 pb-24 sm:pt-0">
             {/* Background effects */}
             <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950" />
             <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
