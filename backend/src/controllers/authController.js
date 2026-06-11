@@ -56,10 +56,24 @@ export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
+        console.log(`[AUTH] Login attempt for email: ${email}`);
+
         // Find user by email
         const user = await User.findOne({ email });
         if (!user) {
+            console.log(`[AUTH] User not found: ${email}`);
             const error = new Error('Invalid credentials');
+            error.statusCode = 401;
+            error.name = 'AuthenticationError';
+            return next(error);
+        }
+
+        console.log(`[AUTH] User found: ${email}, provider: ${user.provider}, has password: ${!!user.password}`);
+
+        // Check if this is an OAuth user trying to login with password
+        if (user.provider !== 'local' || !user.password) {
+            console.log(`[AUTH] OAuth user attempting password login: ${email}`);
+            const error = new Error('This account uses OAuth login. Please use Google or GitHub login.');
             error.statusCode = 401;
             error.name = 'AuthenticationError';
             return next(error);
@@ -67,6 +81,8 @@ export const login = async (req, res, next) => {
 
         // Check password
         const isPasswordValid = await user.comparePassword(password);
+        console.log(`[AUTH] Password validation result: ${isPasswordValid}`);
+
         if (!isPasswordValid) {
             const error = new Error('Invalid credentials');
             error.statusCode = 401;
@@ -77,6 +93,7 @@ export const login = async (req, res, next) => {
         // Generate token
         const token = generateToken(user._id, user.email);
 
+        console.log(`[AUTH] Login successful for: ${email}`);
         res.status(200).json({
             success: true,
             data: {
@@ -85,6 +102,7 @@ export const login = async (req, res, next) => {
             }
         });
     } catch (error) {
+        console.error(`[AUTH] Login error:`, error);
         next(error);
     }
 };
