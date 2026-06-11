@@ -116,9 +116,6 @@ const createWindow = () => {
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-        // For testing: Open DevTools in production builds too
-        // Comment this line out for final release
-        mainWindow.webContents.openDevTools();
     }
 
     mainWindow.once('ready-to-show', () => {

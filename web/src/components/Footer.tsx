@@ -24,7 +24,7 @@ const SOCIAL_LINKS = [
     { icon: Github, href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman', label: 'GitHub' },
     { icon: Twitter, href: '#', label: 'Twitter' },
     { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Mail, href: 'mailto:contact@postmanlike.dev', label: 'Email' },
+    { icon: Mail, href: 'mailto:apiflow.support@gmail.com', label: 'Email' },
 ];
 
 export default function Footer() {

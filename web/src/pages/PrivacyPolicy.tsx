@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 
 const REPOSITORY_URL = 'https://github.com/vishalvishwakarma6688/desktop-application-postman';
-const CONTACT_EMAIL = 'vishalvishwakarma2786@gmail.com';
+const CONTACT_EMAIL = 'apiflow.support@gmail.com';
 
 export default function PrivacyPolicy() {
     return (

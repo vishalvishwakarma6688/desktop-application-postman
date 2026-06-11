@@ -138,7 +138,7 @@ export default function TermsOfService() {
                             For questions about these terms, please contact us at:
                         </p>
                         <p className="text-orange-400">
-                            Email: <a href="mailto:legal@apiflow.dev" className="hover:underline">legal@apiflow.dev</a>
+                            Email: <a href="mailto:apiflow.support@gmail.com" className="hover:underline">apiflow.support@gmail.com</a>
                         </p>
                     </section>
                 </div>

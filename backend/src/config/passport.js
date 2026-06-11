@@ -2,6 +2,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import User from '../models/User.js';
+import { sendWelcomeEmail } from '../services/emailService.js';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
@@ -36,6 +37,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     provider: 'google',
                     providerId: profile.id,
                 });
+
+                // Send welcome email for new OAuth user
+                sendWelcomeEmail(user.email, user.name).catch(err => {
+                    console.error('Failed to send welcome email:', err.message);
+                });
+
                 return done(null, user);
             } catch (err) {
                 return done(err, null);
@@ -77,6 +84,12 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                     provider: 'github',
                     providerId: String(profile.id),
                 });
+
+                // Send welcome email for new OAuth user
+                sendWelcomeEmail(user.email, user.name).catch(err => {
+                    console.error('Failed to send welcome email:', err.message);
+                });
+
                 return done(null, user);
             } catch (err) {
                 return done(err, null);
