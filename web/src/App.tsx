@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
+import NewFeaturesShowcase from '@/components/NewFeaturesShowcase';
+import GitSyncShowcase from '@/components/GitSyncShowcase';
 import HowItWorks from '@/components/HowItWorks';
 import SecurityPrivacy from '@/components/SecurityPrivacy';
 import Download from '@/components/Download';
@@ -17,6 +19,8 @@ function HomePage() {
         <>
             <Hero />
             <Features />
+            <NewFeaturesShowcase />
+            <GitSyncShowcase />
             <HowItWorks />
             <SecurityPrivacy />
             <Download />

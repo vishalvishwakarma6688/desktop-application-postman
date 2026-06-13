@@ -4,6 +4,9 @@ import * as path from 'path';
 import { Menu } from 'electron';
 import { fileURLToPath } from 'url';
 import { setupIpcHandlers } from './ipc/handlers.js';
+import * as fs from 'fs';
+import { setupTray } from './trayManager.js';
+import { setupHealthMonitor, triggerImmediateSweep } from './healthMonitor.js';
 
 const { autoUpdater } = pkg;
 
@@ -96,13 +99,17 @@ const setupAutoUpdater = () => {
 };
 
 const createWindow = () => {
+    const preloadPath = path.join(__dirname, 'preload.cjs');
+    console.log('[ELECTRON MAIN] Preload path:', preloadPath);
+    console.log('[ELECTRON MAIN] Preload exists:', fs.existsSync(preloadPath));
+
     mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
         minWidth: 1000,
         minHeight: 600,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: preloadPath,
             contextIsolation: true,
             nodeIntegration: false,
             sandbox: false,
@@ -111,7 +118,8 @@ const createWindow = () => {
         show: false,
     });
 
-    if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
+    const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'production';
+    if (isDev) {
         mainWindow.loadURL('http://localhost:5173');
         mainWindow.webContents.openDevTools();
     } else {
@@ -123,6 +131,14 @@ const createWindow = () => {
         // Start updater only after window is fully shown and renderer is ready
         if (app.isPackaged) {
             setupAutoUpdater();
+        }
+    });
+
+    // Close to tray override
+    mainWindow.on('close', (event) => {
+        if (!(app as any).isQuitting) {
+            event.preventDefault();
+            mainWindow?.hide();
         }
     });
 
@@ -173,6 +189,14 @@ app.whenReady().then(() => {
     });
 
     createWindow();
+
+    // Initialize System Tray and Background API health checks
+    if (mainWindow) {
+        setupTray(mainWindow, () => {
+            triggerImmediateSweep();
+        });
+        setupHealthMonitor(mainWindow);
+    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

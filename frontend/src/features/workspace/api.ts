@@ -17,7 +17,7 @@ export const workspaceApi = {
         return response.data;
     },
 
-    update: async (id: string, data: { name: string }): Promise<ApiResponse<Workspace>> => {
+    update: async (id: string, data: { name?: string; localDirectory?: string | null }): Promise<ApiResponse<Workspace>> => {
         const response = await api.put(`/workspaces/${id}`, data);
         return response.data;
     },
@@ -32,6 +32,16 @@ export const workspaceApi = {
         data: { userId: string; role: string }
     ): Promise<ApiResponse<Workspace>> => {
         const response = await api.post(`/workspaces/${id}/members`, data);
+        return response.data;
+    },
+
+    getSyncData: async (id: string): Promise<ApiResponse<{ workspace: Workspace; collections: any[]; environments: any[] }>> => {
+        const response = await api.get(`/workspaces/${id}/sync-data`);
+        return response.data;
+    },
+
+    importSyncData: async (id: string, data: { collections: any[]; environments: any[] }): Promise<ApiResponse> => {
+        const response = await api.post(`/workspaces/${id}/import-sync-data`, data);
         return response.data;
     },
 };

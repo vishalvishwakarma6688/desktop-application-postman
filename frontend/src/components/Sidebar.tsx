@@ -7,12 +7,14 @@ import { requestApi } from '@/features/requests/api';
 import { workspaceApi } from '@/features/workspace/api';
 import { useTabStore } from '@/store/useTabStore';
 import { Collection, Request } from '@/types';
-import { Plus, Folder, Upload, Search, X, FileJson, Terminal } from 'lucide-react';
+import { Plus, Folder, Upload, Search, X, FileJson, Terminal, Network } from 'lucide-react';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import CollectionItem from '@/components/sidebar/CollectionItem';
 import { parseCurl, isCurlCommand } from '@/utils/curlParser';
+import { triggerLocalSync } from '@/utils/localSync';
+import LanImportModal from './LanImportModal';
 
 export default function Sidebar() {
     const { currentWorkspace, workspaces, setCurrentWorkspace } = useWorkspaceStore();
@@ -29,6 +31,7 @@ export default function Sidebar() {
     const [showImportMenu, setShowImportMenu] = useState(false);
     const [showPasteDialog, setShowPasteDialog] = useState(false);
     const [pasteContent, setPasteContent] = useState('');
+    const [showLanImport, setShowLanImport] = useState(false);
     const importInputRef = useRef<HTMLInputElement>(null);
     const importMenuRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +57,8 @@ export default function Sidebar() {
             setShowNewCollection(false);
             setNewCollectionName('');
             toast.success('Collection created');
+            // Auto-sync to local directory if linked
+            triggerLocalSync(currentWorkspace?._id, currentWorkspace?.localDirectory);
         },
     });
 
@@ -73,6 +78,8 @@ export default function Sidebar() {
                     request: response.data,
                 });
                 toast.success('Request created');
+                // Auto-sync to local directory if linked
+                triggerLocalSync(currentWorkspace?._id, currentWorkspace?.localDirectory);
             }
         },
     });
@@ -327,6 +334,16 @@ export default function Sidebar() {
                                             <button
                                                 onClick={() => {
                                                     setShowImportMenu(false);
+                                                    setShowLanImport(true);
+                                                }}
+                                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                            >
+                                                <Network className="h-4 w-4" />
+                                                <span>Import from LAN</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setShowImportMenu(false);
                                                     importInputRef.current?.click();
                                                 }}
                                                 className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors rounded-b-lg"
@@ -477,6 +494,7 @@ export default function Sidebar() {
                     </div>
                 </div>
             )}
+            {showLanImport && <LanImportModal onClose={() => setShowLanImport(false)} />}
         </div>
     );
 }

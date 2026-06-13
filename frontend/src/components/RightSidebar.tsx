@@ -3,11 +3,12 @@ import { X, Copy, Check, Settings, Cookie } from 'lucide-react';
 import { Request } from '@/types';
 import { generateCodeSnippet, type CodeLanguage } from '@/utils/codeGenerator';
 import toast from 'react-hot-toast';
+import NotesPanel from './request/NotesPanel';
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    activeTab: 'code' | 'cookies' | 'settings';
+    activeTab: 'code' | 'cookies' | 'settings' | 'notes';
     request: Request | null;
 }
 
@@ -48,6 +49,7 @@ export default function RightSidebar({ isOpen, onClose, activeTab, request }: Pr
                     {activeTab === 'code' && 'Code Snippet'}
                     {activeTab === 'cookies' && 'Cookies'}
                     {activeTab === 'settings' && 'Settings'}
+                    {activeTab === 'notes' && 'Notes & Documentation'}
                 </h2>
                 <button
                     onClick={onClose}
@@ -59,6 +61,8 @@ export default function RightSidebar({ isOpen, onClose, activeTab, request }: Pr
 
             {/* Content */}
             <div className="flex-1 overflow-hidden flex flex-col">
+                {activeTab === 'notes' && request && <NotesPanel request={request} />}
+
                 {activeTab === 'code' && (
                     <>
                         {/* Language Selector */}

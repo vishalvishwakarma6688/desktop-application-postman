@@ -12,6 +12,7 @@ export interface Workspace {
     name: string;
     owner: User;
     members: WorkspaceMember[];
+    localDirectory?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -46,7 +47,15 @@ export interface Request {
         pre?: string;
         post?: string;
     };
+    notes?: string;
     isStarred: boolean;
+    monitorSettings?: {
+        isMonitored: boolean;
+        interval: number; // in seconds
+        lastStatus?: 'healthy' | 'unhealthy' | 'unknown';
+        lastChecked?: string;
+        lastResponseTime?: number;
+    };
     createdBy?: User;
     createdAt: string;
     updatedAt: string;
@@ -97,6 +106,10 @@ export interface EnvironmentVariable {
     key: string;
     value: string;
     enabled: boolean;
+    /** When true, value is stored empty and encryptedValue holds the OS-encrypted cipher blob */
+    isSecret?: boolean;
+    /** Base64-encoded Electron safeStorage cipher — only present when isSecret=true */
+    encryptedValue?: string;
 }
 
 export interface RequestHistory {

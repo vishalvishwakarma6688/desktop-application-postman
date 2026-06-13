@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Book, Code, Zap, Settings, Users, Cloud } from 'lucide-react';
+import { ArrowLeft, Book, Code, Zap, Settings, Users, Cloud, GitBranch } from 'lucide-react';
 
 export default function Documentation() {
     return (
@@ -121,6 +121,78 @@ export default function Documentation() {
                             <li>Share collections and requests</li>
                             <li>Sync changes across devices</li>
                         </ul>
+                    </section>
+
+                    <section className="mb-8">
+                        <h2 className="text-2xl font-semibold text-white mb-4 flex items-center gap-2">
+                            <GitBranch className="h-6 w-6 text-emerald-400" />
+                            Local-First Git Sync
+                        </h2>
+                        <p className="text-gray-300 leading-relaxed mb-4">
+                            APIFlow's standout feature: link any workspace to a local folder on your machine and version-control
+                            your API collections with Git — no cloud required.
+                        </p>
+
+                        <div className="space-y-6">
+                            <div className="bg-gray-900 border border-emerald-500/20 rounded-lg p-6">
+                                <h3 className="text-xl font-semibold text-white mb-2">Setting Up</h3>
+                                <ol className="list-decimal list-inside text-gray-300 space-y-2 ml-4">
+                                    <li>Click the <span className="text-emerald-400 font-semibold">Git icon</span> in the app header</li>
+                                    <li>Click <span className="text-orange-400 font-semibold">"Link Local Folder"</span> and choose a directory</li>
+                                    <li>Your collections and environments are automatically exported as JSON files</li>
+                                    <li>Click <span className="text-orange-400 font-semibold">"Initialize Git"</span> to start version tracking</li>
+                                </ol>
+                            </div>
+
+                            <div className="bg-gray-900 border border-emerald-500/20 rounded-lg p-6">
+                                <h3 className="text-xl font-semibold text-white mb-2">File Structure</h3>
+                                <p className="text-gray-300 leading-relaxed mb-3">
+                                    When linked, your workspace is exported as clean, human-readable JSON:
+                                </p>
+                                <div className="bg-gray-950 border border-gray-800 rounded-lg p-4 font-mono text-sm text-gray-300">
+                                    <div className="text-orange-400">your-folder/</div>
+                                    <div className="ml-4">├── collections/</div>
+                                    <div className="ml-8 text-emerald-400">├── Auth API.json</div>
+                                    <div className="ml-8 text-emerald-400">├── Payment Flow.json</div>
+                                    <div className="ml-8 text-gray-500">└── ...</div>
+                                    <div className="ml-4">└── environments/</div>
+                                    <div className="ml-8 text-blue-400">├── Production.json</div>
+                                    <div className="ml-8 text-blue-400">├── Staging.json</div>
+                                    <div className="ml-8 text-gray-500">└── ...</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-900 border border-emerald-500/20 rounded-lg p-6">
+                                <h3 className="text-xl font-semibold text-white mb-2">Auto-Sync</h3>
+                                <p className="text-gray-300 leading-relaxed">
+                                    Once linked, every change you make in the app — saving a request, creating a collection,
+                                    renaming, or deleting — is automatically written to disk. No manual export needed.
+                                </p>
+                            </div>
+
+                            <div className="bg-gray-900 border border-emerald-500/20 rounded-lg p-6">
+                                <h3 className="text-xl font-semibold text-white mb-2">Git Workflow</h3>
+                                <p className="text-gray-300 leading-relaxed mb-3">
+                                    Use the built-in Git panel for a complete workflow:
+                                </p>
+                                <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
+                                    <li><span className="text-orange-400 font-semibold">Commit</span> — stage all changes and commit with a message</li>
+                                    <li><span className="text-orange-400 font-semibold">Push</span> — push commits to any remote (GitHub, GitLab, Bitbucket, etc.)</li>
+                                    <li><span className="text-orange-400 font-semibold">Pull</span> — pull changes from teammates and auto-import them into the database</li>
+                                    <li><span className="text-orange-400 font-semibold">Remote</span> — add or change the remote origin URL</li>
+                                </ul>
+                            </div>
+
+                            <div className="bg-gray-900 border border-emerald-500/20 rounded-lg p-6">
+                                <h3 className="text-xl font-semibold text-white mb-2">Team Collaboration via Git</h3>
+                                <p className="text-gray-300 leading-relaxed">
+                                    Share API collections with your team using the same Git workflow you use for code.
+                                    Team members clone the repo, open APIFlow, link the same folder, and click
+                                    <span className="text-orange-400 font-semibold"> "Load from Disk"</span> to import everything.
+                                    Use branches and pull requests for API reviews.
+                                </p>
+                            </div>
+                        </div>
                     </section>
 
                     <section className="mb-8">

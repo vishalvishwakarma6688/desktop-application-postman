@@ -117,6 +117,7 @@ export const createRequest = async (req, res, next) => {
             queryParams: queryParams || [],
             body: body || { type: 'none', content: null },
             auth: auth || { type: 'none' },
+            monitorSettings: req.body.monitorSettings || { isMonitored: false, interval: 60 },
             createdBy: req.user.userId
         });
 
@@ -138,9 +139,16 @@ export const createRequest = async (req, res, next) => {
 // @access  Private
 export const getRequestsByCollection = async (req, res, next) => {
     try {
+        console.log('📥 [GET REQUESTS] Fetching requests for collection:', req.params.collectionId);
+
         const requests = await Request.find({ collection: req.params.collectionId })
             .populate('createdBy', 'name email')
             .sort({ createdAt: -1 });
+
+        console.log('📤 [GET REQUESTS] Found', requests.length, 'requests');
+        requests.forEach((req, idx) => {
+            console.log(`  ${idx + 1}. ${req.name} - Notes: ${req.notes ? `${req.notes.substring(0, 50)}...` : '(empty)'}`);
+        });
 
         res.status(200).json({
             success: true,
@@ -148,6 +156,7 @@ export const getRequestsByCollection = async (req, res, next) => {
             data: requests
         });
     } catch (error) {
+        console.error('❌ [GET REQUESTS] Error:', error);
         next(error);
     }
 };
@@ -183,7 +192,11 @@ export const getRequestById = async (req, res, next) => {
 // @access  Private
 export const updateRequest = async (req, res, next) => {
     try {
-        const { name, method, url, headers, queryParams, body, auth, scripts } = req.body;
+        console.log('🔍 [UPDATE REQUEST] Request ID:', req.params.id);
+        console.log('🔍 [UPDATE REQUEST] Request Body Keys:', Object.keys(req.body));
+        console.log('🔍 [UPDATE REQUEST] Notes in body:', req.body.notes);
+
+        const { name, method, url, headers, queryParams, body, auth, scripts, monitorSettings, notes } = req.body;
 
         const request = await Request.findById(req.params.id);
 
@@ -193,6 +206,9 @@ export const updateRequest = async (req, res, next) => {
             error.name = 'NotFoundError';
             return next(error);
         }
+
+        console.log('🔍 [UPDATE REQUEST] Current notes in DB:', request.notes);
+        console.log('🔍 [UPDATE REQUEST] New notes to save:', notes);
 
         // Validate HTTP method if provided
         if (method) {
@@ -227,14 +243,24 @@ export const updateRequest = async (req, res, next) => {
         if (body) request.body = body;
         if (auth) request.auth = auth;
         if (scripts !== undefined) request.scripts = scripts;
+        if (monitorSettings !== undefined) request.monitorSettings = monitorSettings;
+        if (notes !== undefined) {
+            console.log('✅ [UPDATE REQUEST] Updating notes field to:', notes);
+            request.notes = notes;
+        } else {
+            console.log('⚠️ [UPDATE REQUEST] Notes is undefined, not updating');
+        }
 
         await request.save();
+
+        console.log('✅ [UPDATE REQUEST] Saved! Notes in saved doc:', request.notes);
 
         res.status(200).json({
             success: true,
             data: request
         });
     } catch (error) {
+        console.error('❌ [UPDATE REQUEST] Error:', error);
         next(error);
     }
 };

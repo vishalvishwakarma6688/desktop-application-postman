@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { collectionApi } from '@/features/collections/api';
 import { requestApi } from '@/features/requests/api';
 import { useTabStore } from '@/store/useTabStore';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { Collection, Request } from '@/types';
 import { ChevronRight, Folder, Plus, MoreVertical, Edit, Trash2, Check, X, Download, Play } from 'lucide-react';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import CollectionRunner from '@/components/CollectionRunner';
 import RequestItem from './RequestItem';
+import { triggerLocalSync } from '@/utils/localSync';
 
 interface Props {
     collection: Collection;
@@ -27,6 +29,7 @@ export default function CollectionItem({
 }: Props) {
     const queryClient = useQueryClient();
     const { activeTabId } = useTabStore();
+    const { currentWorkspace } = useWorkspaceStore();
     const [renaming, setRenaming] = useState(false);
     const [renameValue, setRenameValue] = useState(collection.name);
     const [showRunner, setShowRunner] = useState(false);
@@ -42,6 +45,8 @@ export default function CollectionItem({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collections'] });
             setRenaming(false);
+            // Auto-sync to local directory if linked
+            triggerLocalSync(currentWorkspace?._id, currentWorkspace?.localDirectory);
         },
     });
 
@@ -49,6 +54,8 @@ export default function CollectionItem({
         mutationFn: () => collectionApi.delete(collection._id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['collections'] });
+            // Auto-sync to local directory if linked
+            triggerLocalSync(currentWorkspace?._id, currentWorkspace?.localDirectory);
         },
     });
 
@@ -56,6 +63,8 @@ export default function CollectionItem({
         mutationFn: (id: string) => requestApi.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['requests', collection._id] });
+            // Auto-sync to local directory if linked
+            triggerLocalSync(currentWorkspace?._id, currentWorkspace?.localDirectory);
         },
     });
 

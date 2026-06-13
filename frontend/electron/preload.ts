@@ -9,9 +9,24 @@ const RECEIVE_CHANNELS = [
     'updater:update-available',
     'updater:download-progress',
     'updater:update-downloaded',
+    'health:status-change',
 ] as const;
 
-const INVOKE_CHANNELS = ['dialog:openFile', 'app:getPath'] as const;
+const INVOKE_CHANNELS = [
+    'dialog:openFile',
+    'app:getPath',
+    'dialog:openDirectory',
+    'fs:writeFiles',
+    'fs:readFiles',
+    'git:run',
+    'vault:isAvailable',
+    'vault:encrypt',
+    'vault:decrypt',
+    'lan:start',
+    'lan:stop',
+    'health:register',
+    'health:run-sweep',
+] as const;
 
 contextBridge.exposeInMainWorld('electronAPI', {
     send: (channel: string, data?: unknown) => {
@@ -35,3 +50,5 @@ contextBridge.exposeInMainWorld('appInfo', {
     platform: process.platform,
     version: process.versions.electron,
 });
+
+console.log('[APIFlow Preload] Preload script loaded and electronAPI exposed.');

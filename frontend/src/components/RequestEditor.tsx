@@ -4,7 +4,8 @@ import toast from 'react-hot-toast';
 import { requestApi } from '@/features/requests/api';
 import { useTabStore } from '@/store/useTabStore';
 import { useRequestStore } from '@/store/useRequestStore';
-import { Send, Save, X, Pencil, Code, Cookie, Settings } from 'lucide-react';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { Send, Save, X, Pencil, Code, Cookie, Settings, FileText } from 'lucide-react';
 import { KeyValue, RequestBody, RequestAuth } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import KeyValueEditor from './request/KeyValueEditor';
@@ -12,8 +13,10 @@ import BodyEditor from './request/BodyEditor';
 import AuthEditor from './request/AuthEditor';
 import ResponsePanel from './request/ResponsePanel';
 import ScriptEditor from './request/ScriptEditor';
+import RequestMonitorSettings from './RequestMonitorSettings';
 import RightSidebar from './RightSidebar';
 import { parseCurl, isCurlCommand } from '@/utils/curlParser';
+import { triggerLocalSync } from '@/utils/localSync';
 
 const METHOD_COLORS: Record<string, string> = {
     GET: 'text-green-400', POST: 'text-yellow-400',
@@ -25,10 +28,11 @@ export default function RequestEditor() {
     const queryClient = useQueryClient();
     const { tabs, activeTabId, updateTab } = useTabStore();
     const { activeEnvironment } = useRequestStore();
+    const { currentWorkspace } = useWorkspaceStore();
     const activeTab = tabs.find(t => t.id === activeTabId);
     const activeRequest = activeTab?.request;
 
-    const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts'>('params');
+    const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor'>('params');
     const [response, setResponse] = useState<any>(null);
     const [testResults, setTestResults] = useState<{ name: string; passed: boolean; error?: string }[]>([]);
     const [isCancelled, setIsCancelled] = useState(false);
@@ -36,7 +40,7 @@ export default function RequestEditor() {
     const [urlSuggestions, setUrlSuggestions] = useState<{ url: string; method: string }[]>([]);
     const [showUrlSuggestions, setShowUrlSuggestions] = useState(false);
     const [showRightSidebar, setShowRightSidebar] = useState(false);
-    const [rightSidebarTab, setRightSidebarTab] = useState<'code' | 'cookies' | 'settings'>('code');
+    const [rightSidebarTab, setRightSidebarTab] = useState<'code' | 'cookies' | 'settings' | 'notes'>('code');
     const [isEditingName, setIsEditingName] = useState(false);
     const [editNameValue, setEditNameValue] = useState('');
     const urlSuggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,6 +83,8 @@ export default function RequestEditor() {
                         return { ...old, data: old.data.map((r: any) => r._id === res.data!._id ? res.data : r) };
                     });
                 }
+                // Auto-sync to local directory if linked
+                triggerLocalSync(currentWorkspace?._id, currentWorkspace?.localDirectory);
             }
         },
         onError: () => {
@@ -134,6 +140,8 @@ export default function RequestEditor() {
                     headers: activeRequest.headers, queryParams: activeRequest.queryParams,
                     body: activeRequest.body, auth: activeRequest.auth,
                     scripts: activeRequest.scripts,
+                    // ✅ Preserve monitor settings so health monitor is NOT disabled on Send
+                    monitorSettings: activeRequest.monitorSettings,
                 },
             },
             {
@@ -439,18 +447,20 @@ export default function RequestEditor() {
                     {/* Tab nav */}
                     <div className="border-b border-gray-800 shrink-0">
                         <div className="flex gap-1 px-6">
-                            {(['params', 'headers', 'body', 'auth', 'scripts'] as const).map((tab) => {
+                            {(['params', 'headers', 'body', 'auth', 'scripts', 'monitor'] as const).map((tab) => {
                                 const badge = tab === 'params'
                                     ? (activeRequest.queryParams?.filter(p => p.key).length || null)
                                     : tab === 'headers'
                                         ? (activeRequest.headers?.filter(h => h.key).length || null)
-                                        : null;
+                                        : tab === 'monitor' && activeRequest.monitorSettings?.isMonitored
+                                            ? 'on'
+                                            : null;
                                 return (
                                     <button key={tab} onClick={() => setCurrentTab(tab)}
                                         className={`relative px-3 py-2.5 text-sm font-medium capitalize transition-colors ${currentTab === tab ? 'text-orange-500' : 'text-gray-400 hover:text-gray-300'}`}
                                     >
-                                        {tab}
-                                        {badge ? <span className="ml-1.5 rounded-full bg-orange-500/20 px-1.5 py-0.5 text-xs text-orange-400">{badge}</span> : null}
+                                        {tab === 'monitor' ? 'Health Monitor' : tab}
+                                        {badge ? <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${tab === 'monitor' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>{badge}</span> : null}
                                         {currentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />}
                                     </button>
                                 );
@@ -458,24 +468,33 @@ export default function RequestEditor() {
                         </div>
                     </div>
 
-                    {/* Resizable split */}
+                    {/* Resizable split — hidden when monitor tab is active */}
                     <div ref={containerRef} className="flex flex-1 flex-col overflow-hidden">
-                        <div style={{ height: requestPanelHeight }} className="overflow-auto p-4 shrink-0">
-                            {currentTab === 'params' && <KeyValueEditor rows={queryParams} onChange={handleParamsChange} placeholder="Parameter" />}
-                            {currentTab === 'headers' && <KeyValueEditor rows={headers} onChange={(r) => patch({ headers: r })} placeholder="Header name" />}
-                            {currentTab === 'body' && <BodyEditor body={activeRequest.body || { type: 'none', content: null }} onChange={(b: RequestBody) => patch({ body: b })} />}
-                            {currentTab === 'auth' && <AuthEditor auth={activeRequest.auth || { type: 'none' }} onChange={(a: RequestAuth) => patch({ auth: a })} />}
-                            {currentTab === 'scripts' && <ScriptEditor scripts={activeRequest.scripts || {}} onChange={(s) => patch({ scripts: s })} />}
-                        </div>
-
-                        {/* Drag handle */}
-                        <div onMouseDown={handleDragStart} className="group relative h-2 shrink-0 cursor-row-resize bg-gray-800 hover:bg-orange-500/20 transition-colors">
-                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center">
-                                <div className="h-0.5 w-10 rounded-full bg-gray-600 group-hover:bg-orange-400 transition-colors" />
+                        {currentTab === 'monitor' ? (
+                            /* ── Full-height monitor panel ── */
+                            <div className="flex-1 overflow-auto p-5">
+                                <RequestMonitorSettings request={activeRequest} onUpdate={(updates) => patch(updates)} />
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                <div style={{ height: requestPanelHeight }} className="overflow-auto p-4 shrink-0">
+                                    {currentTab === 'params' && <KeyValueEditor rows={queryParams} onChange={handleParamsChange} placeholder="Parameter" />}
+                                    {currentTab === 'headers' && <KeyValueEditor rows={headers} onChange={(r) => patch({ headers: r })} placeholder="Header name" />}
+                                    {currentTab === 'body' && <BodyEditor body={activeRequest.body || { type: 'none', content: null }} onChange={(b: RequestBody) => patch({ body: b })} />}
+                                    {currentTab === 'auth' && <AuthEditor auth={activeRequest.auth || { type: 'none' }} onChange={(a: RequestAuth) => patch({ auth: a })} />}
+                                    {currentTab === 'scripts' && <ScriptEditor scripts={activeRequest.scripts || {}} onChange={(s) => patch({ scripts: s })} />}
+                                </div>
 
-                        <ResponsePanel response={response} isSending={isSending} onCancel={handleCancel} testResults={testResults} />
+                                {/* Drag handle */}
+                                <div onMouseDown={handleDragStart} className="group relative h-2 shrink-0 cursor-row-resize bg-gray-800 hover:bg-orange-500/20 transition-colors">
+                                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center">
+                                        <div className="h-0.5 w-10 rounded-full bg-gray-600 group-hover:bg-orange-400 transition-colors" />
+                                    </div>
+                                </div>
+
+                                <ResponsePanel response={response} isSending={isSending} onCancel={handleCancel} testResults={testResults} />
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -519,6 +538,19 @@ export default function RequestEditor() {
                         title="Settings"
                     >
                         <Settings className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => {
+                            setRightSidebarTab('notes');
+                            setShowRightSidebar(!showRightSidebar || rightSidebarTab !== 'notes');
+                        }}
+                        className={`p-3 border-b border-gray-800 transition-colors ${showRightSidebar && rightSidebarTab === 'notes'
+                            ? 'bg-gray-800 text-orange-500'
+                            : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
+                            }`}
+                        title="Notes & Documentation"
+                    >
+                        <FileText className="h-5 w-5" />
                     </button>
                 </div>
 

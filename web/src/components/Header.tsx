@@ -4,6 +4,8 @@ import CodeSigningNotice from './CodeSigningNotice';
 
 const NAV = [
     { label: 'Features', href: '#features' },
+    { label: "What's New", href: '#new-features', badge: true },
+    { label: 'Git Sync', href: '#git-sync' },
     { label: 'How it Works', href: '#how-it-works' },
     { label: 'Security', href: '#security' },
     { label: 'Download', href: '#download' },
@@ -42,8 +44,14 @@ export default function Header() {
                     {/* Desktop nav */}
                     <nav className="hidden md:flex items-center gap-8">
                         {NAV.map(n => (
-                            <a key={n.href} href={n.href} className="text-sm text-gray-400 hover:text-orange-400 transition-colors font-medium">
+                            <a key={n.href} href={n.href} className="relative text-sm text-gray-400 hover:text-orange-400 transition-colors font-medium flex items-center gap-1.5">
                                 {n.label}
+                                {(n as any).badge && (
+                                    <span className="flex h-1.5 w-1.5">
+                                        <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-orange-400 opacity-75" />
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                    </span>
+                                )}
                             </a>
                         ))}
                     </nav>

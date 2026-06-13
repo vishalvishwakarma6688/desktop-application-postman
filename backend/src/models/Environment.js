@@ -19,12 +19,21 @@ const environmentSchema = new mongoose.Schema({
         },
         value: {
             type: String,
-            required: [true, 'Variable value is required'],
             default: ''
         },
         enabled: {
             type: Boolean,
             default: true
+        },
+        // Secure Vault fields — when isSecret=true, value is empty and
+        // encryptedValue holds a Base64-encoded cipher from Electron safeStorage
+        isSecret: {
+            type: Boolean,
+            default: false
+        },
+        encryptedValue: {
+            type: String,
+            default: ''
         }
     }],
     createdBy: {

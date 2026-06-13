@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { workspaceApi } from '@/features/workspace/api';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import MainLayout from '@/layouts/MainLayout';
+import { useHealthMonitor } from '@/hooks/useHealthMonitor';
 
 export default function DashboardPage() {
+    useHealthMonitor();
     const { setWorkspaces, setCurrentWorkspace, currentWorkspace } = useWorkspaceStore();
 
     const { data: workspacesData, isLoading } = useQuery({

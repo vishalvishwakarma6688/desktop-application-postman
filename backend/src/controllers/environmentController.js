@@ -36,11 +36,19 @@ export const createEnvironment = async (req, res, next) => {
             }
         }
 
-        // Create environment
+        // Create environment — variables may include isSecret + encryptedValue (vault)
+        const sanitizedVars = (variables || []).map(v => ({
+            key: v.key,
+            value: v.isSecret ? '' : (v.value || ''),
+            enabled: v.enabled !== false,
+            isSecret: !!v.isSecret,
+            encryptedValue: v.isSecret ? (v.encryptedValue || '') : '',
+        }));
+
         const environment = await Environment.create({
             name,
             workspace,
-            variables: variables || [],
+            variables: sanitizedVars,
             createdBy: req.user.userId
         });
 
@@ -116,7 +124,7 @@ export const updateEnvironment = async (req, res, next) => {
             return next(error);
         }
 
-        // Validate variables if provided
+        // Validate and update variables if provided
         if (variables && Array.isArray(variables)) {
             const keys = new Set();
             for (const variable of variables) {
@@ -136,7 +144,14 @@ export const updateEnvironment = async (req, res, next) => {
                 }
                 keys.add(variable.key);
             }
-            environment.variables = variables;
+            // Persist vault fields alongside standard fields
+            environment.variables = variables.map(v => ({
+                key: v.key,
+                value: v.isSecret ? '' : (v.value || ''),
+                enabled: v.enabled !== false,
+                isSecret: !!v.isSecret,
+                encryptedValue: v.isSecret ? (v.encryptedValue || '') : '',
+            }));
         }
 
         if (name) environment.name = name;

@@ -5,7 +5,9 @@ import {
     getWorkspaceById,
     addMember,
     updateWorkspace,
-    deleteWorkspace
+    deleteWorkspace,
+    getWorkspaceSyncData,
+    importWorkspaceSyncData
 } from '../controllers/workspaceController.js';
 import auth from '../middlewares/auth.js';
 
@@ -17,6 +19,8 @@ router.use(auth);
 router.post('/', createWorkspace);
 router.get('/', getWorkspaces);
 router.get('/:id', getWorkspaceById);
+router.get('/:id/sync-data', getWorkspaceSyncData);
+router.post('/:id/import-sync-data', importWorkspaceSyncData);
 router.post('/:id/members', addMember);
 router.put('/:id', updateWorkspace);
 router.delete('/:id', deleteWorkspace);

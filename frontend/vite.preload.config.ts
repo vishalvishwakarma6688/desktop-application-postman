@@ -8,7 +8,7 @@ export default defineConfig({
         lib: {
             entry: path.resolve(__dirname, 'electron/preload.ts'),
             formats: ['cjs'],
-            fileName: () => 'preload.js',
+            fileName: () => 'preload.cjs',
         },
         outDir: 'dist-electron',
         emptyOutDir: false, // Don't wipe main.js when building preload
@@ -17,7 +17,7 @@ export default defineConfig({
             output: {
                 // Ensure output is CJS, not ESM
                 format: 'cjs',
-                entryFileNames: 'preload.js',
+                entryFileNames: 'preload.cjs',
             },
         },
         // Don't minify so logs are readable in DevTools

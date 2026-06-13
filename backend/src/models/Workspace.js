@@ -21,7 +21,11 @@ const workspaceSchema = new mongoose.Schema({
             enum: ['admin', 'editor', 'viewer'],
             default: 'viewer'
         }
-    }]
+    }],
+    localDirectory: {
+        type: String,
+        default: null
+    }
 }, {
     timestamps: true
 });

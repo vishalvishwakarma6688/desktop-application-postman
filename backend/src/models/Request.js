@@ -106,6 +106,31 @@ const requestSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    notes: {
+        type: String,
+        default: ''
+    },
+    monitorSettings: {
+        isMonitored: {
+            type: Boolean,
+            default: false
+        },
+        interval: {
+            type: Number,
+            default: 60 // in seconds
+        },
+        lastStatus: {
+            type: String,
+            enum: ['healthy', 'unhealthy', 'unknown'],
+            default: 'unknown'
+        },
+        lastChecked: {
+            type: Date
+        },
+        lastResponseTime: {
+            type: Number
+        }
+    },
     scripts: {
         pre: {
             type: String,

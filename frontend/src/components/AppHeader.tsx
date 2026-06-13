@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Settings, Bell, ChevronDown, LogOut, Globe, History } from 'lucide-react';
+import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRequestStore } from '@/store/useRequestStore';
@@ -8,6 +8,8 @@ import { environmentApi } from '@/features/environments/api';
 import EnvironmentPanel from './EnvironmentPanel';
 import HistoryPanel from './HistoryPanel';
 import SettingsPanel from './SettingsPanel';
+import GitSyncPanel from './GitSyncPanel';
+import LanShareModal from './LanShareModal';
 
 export default function AppHeader() {
     const { user, logout } = useAuthStore();
@@ -20,6 +22,8 @@ export default function AppHeader() {
     const [showEnvPanel, setShowEnvPanel] = useState(false);
     const [showHistoryPanel, setShowHistoryPanel] = useState(false);
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+    const [showGitPanel, setShowGitPanel] = useState(false);
+    const [showLanSharePanel, setShowLanSharePanel] = useState(false);
 
     const { data: envsData } = useQuery({
         queryKey: ['environments', currentWorkspace?._id],
@@ -121,6 +125,24 @@ export default function AppHeader() {
 
             {/* Right side actions */}
             <div className="flex items-center gap-1">
+                {currentWorkspace && (
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setShowLanSharePanel(true)}
+                            className="rounded p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+                            title="Share Workspace over LAN"
+                        >
+                            <Share2 className="h-4 w-4" />
+                        </button>
+                        <button
+                            onClick={() => setShowGitPanel(true)}
+                            className={`rounded p-1.5 transition-colors ${currentWorkspace.localDirectory ? 'text-orange-400 hover:bg-gray-800' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}
+                            title={currentWorkspace.localDirectory ? 'Git Synced to Folder' : 'Link to Git Repository'}
+                        >
+                            <GitBranch className="h-4 w-4" />
+                        </button>
+                    </div>
+                )}
                 <button className="rounded p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors" title="Settings" onClick={() => setShowSettingsPanel(true)}>
                     <Settings className="h-4 w-4" />
                 </button>                <button
@@ -175,6 +197,14 @@ export default function AppHeader() {
             {showEnvPanel && <EnvironmentPanel onClose={() => setShowEnvPanel(false)} />}
             {showHistoryPanel && <HistoryPanel onClose={() => setShowHistoryPanel(false)} />}
             {showSettingsPanel && <SettingsPanel onClose={() => setShowSettingsPanel(false)} />}
+            {showGitPanel && <GitSyncPanel onClose={() => setShowGitPanel(false)} />}
+            {showLanSharePanel && (
+                <LanShareModal
+                    workspaceId={currentWorkspace!._id}
+                    workspaceName={currentWorkspace!.name}
+                    onClose={() => setShowLanSharePanel(false)}
+                />
+            )}
         </div>
     );
 }
