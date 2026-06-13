@@ -9,6 +9,7 @@ import SecurityPrivacy from '@/components/SecurityPrivacy';
 import Download from '@/components/Download';
 import Testimonials from '@/components/Testimonials';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScrollToTop';
 import Documentation from '@/pages/Documentation';
 import License from '@/pages/License';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
@@ -32,6 +33,7 @@ function HomePage() {
 export default function App() {
     return (
         <Router>
+            <ScrollToTop />
             <div className="min-h-screen bg-gray-950 overflow-x-hidden">
                 <Header />
                 <main>
