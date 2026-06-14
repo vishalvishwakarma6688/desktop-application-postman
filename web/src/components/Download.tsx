@@ -60,7 +60,7 @@ export default function Download() {
                         Ready to Start?
                     </span>
                     <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-                        Download <span className="gradient-text">APIFlow</span>
+                        Download <span className="gradient-text">DataCourier</span>
                     </h2>
                     <p className="max-w-2xl mx-auto text-lg text-gray-400 mb-8">
                         Free forever. No signup required. Start testing APIs in seconds.

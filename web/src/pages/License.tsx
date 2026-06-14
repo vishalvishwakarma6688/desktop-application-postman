@@ -108,7 +108,7 @@ export default function License() {
                             If you have questions about the license, please contact us at:
                         </p>
                         <p className="text-orange-400">
-                            Email: <a href="mailto:apiflow.support@gmail.com" className="hover:underline">apiflow.support@gmail.com</a>
+                            Email: <a href="mailto:datacourier.support@gmail.com" className="hover:underline">datacourier.support@gmail.com</a>
                         </p>
                     </section>
                 </div>

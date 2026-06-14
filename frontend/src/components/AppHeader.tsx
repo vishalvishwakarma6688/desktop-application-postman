@@ -40,7 +40,7 @@ export default function AppHeader() {
         <div className="flex h-10 items-center gap-1 border-b border-gray-800 bg-gray-950 px-3 shrink-0 select-none">
             {/* App logo */}
             <div className="flex items-center gap-2 mr-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded bg-orange-500 text-xs font-bold text-white">P</div>
+                <div className="flex h-6 w-6 items-center justify-center rounded bg-orange-500 text-[9px] font-bold text-white leading-none">DC</div>
             </div>
 
             {/* Workspace switcher */}

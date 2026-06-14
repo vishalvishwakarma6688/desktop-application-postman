@@ -23,8 +23,8 @@ const FOOTER_LINKS = {
 const SOCIAL_LINKS = [
     { icon: Github, href: 'https://github.com/vishalvishwakarma6688/desktop-application-postman', label: 'GitHub' },
     { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Mail, href: 'mailto:apiflow.support@gmail.com', label: 'Email' },
+    { icon: Linkedin, href: 'https://www.linkedin.com/in/vishal-vishwakarma-22b23b234/', label: 'LinkedIn' },
+    { icon: Mail, href: 'mailto:datacourier.support@gmail.com', label: 'Email' },
 ];
 
 export default function Footer() {
@@ -41,7 +41,7 @@ export default function Footer() {
                             <img
                                 src="/datacourier.png"
                                 alt="DataCourier Logo"
-                                className="h-12 transition-transform group-hover:scale-110"
+                                className="h-12 transition-transform"
                             />
                             {/* <span className="font-bold text-lg text-white">
                                 Data<span className="gradient-text">Courier</span>

@@ -22,7 +22,7 @@ export default function CodeSigningNotice({ scrolled }: CodeSigningNoticeProps) 
                     <div className="min-w-0 flex-1 text-xs leading-relaxed">
                         <p className="text-gray-300">
                             <span className="font-semibold text-amber-300">A quick note for Windows users:</span>{' '}
-                            APIFlow is an independent, open-source project and does not yet have a paid
+                            DataCourier is an independent, open-source project and does not yet have a paid
                             code-signing certificate. Because of this, Microsoft Defender SmartScreen may
                             display an &quot;Unknown publisher&quot; message. This warning is expected for
                             the current Windows installer.

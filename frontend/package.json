@@ -1,7 +1,7 @@
 {
-  "name": "postman-like-electron",
+  "name": "datacourier-electron",
   "version": "1.4.3",
-  "description": "Postman-like Desktop Application",
+  "description": "DataCourier - Professional API Testing Desktop Application",
   "homepage": "https://github.com/vishalvishwakarma6688/desktop-application-postman",
   "repository": {
     "type": "git",
@@ -25,8 +25,10 @@
   "keywords": [
     "electron",
     "react",
-    "postman",
-    "api-client"
+    "datacourier",
+    "api-client",
+    "api-testing",
+    "rest-api"
   ],
   "author": {
     "name": "Vishal Vishwakarma",
@@ -70,15 +72,15 @@
     "wait-on": "^8.0.1"
   },
   "build": {
-    "appId": "com.postmanlike.app",
-    "productName": "PostmanLike",
-    "artifactName": "Postman-Like-${os}.${ext}",
+    "appId": "com.datacourier.app",
+    "productName": "DataCourier",
+    "artifactName": "DataCourier-${version}-${os}.${ext}",
     "publish": {
       "provider": "github",
       "owner": "vishalvishwakarma6688",
       "repo": "desktop-application-postman"
     },
-    "copyright": "Copyright © 2025",
+    "copyright": "Copyright © 2025 DataCourier",
     "asar": true,
     "directories": {
       "output": "release",
@@ -130,9 +132,9 @@
     },
     "protocols": [
       {
-        "name": "Postman Like",
+        "name": "DataCourier",
         "schemes": [
-          "postmanlike"
+          "datacourier"
         ]
       }
     ]

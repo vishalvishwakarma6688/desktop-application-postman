@@ -10,7 +10,7 @@ import {
 
 /* ─── Sub-feature data per new feature ─── */
 const HEALTH_MONITOR_POINTS = [
-    { icon: MonitorSmartphone, label: 'System Tray Agent', desc: 'Runs silently in the background even when APIFlow is fully closed.' },
+    { icon: MonitorSmartphone, label: 'System Tray Agent', desc: 'Runs silently in the background even when DataCourier is fully closed.' },
     { icon: Bell, label: 'OS Notifications', desc: 'Native desktop alerts when an endpoint goes down or recovers.' },
     { icon: TrendingUp, label: 'Latency Telemetry', desc: 'Color-coded response time: ⚡ Fast, ⚠ Moderate, 🔴 Slow.' },
     { icon: ShieldCheck, label: 'Auth-Aware Pings', desc: 'Bearer, Basic, and API key headers are sent on every ping.' },
@@ -30,7 +30,7 @@ const VAULT_POINTS = [
 const LAN_POINTS = [
     { icon: QrCode, label: 'QR Code Sharing', desc: 'Scan the QR code on any device on the same Wi-Fi to import instantly.' },
     { icon: Share2, label: 'Zero Config', desc: 'No accounts, no cloud, no setup — just click Share and scan.' },
-    { icon: Download, label: 'One-Tap Import', desc: 'The receiver opens APIFlow and hits Import — done in seconds.' },
+    { icon: Download, label: 'One-Tap Import', desc: 'The receiver opens DataCourier and hits Import — done in seconds.' },
     { icon: Users, label: 'Team-Friendly', desc: 'Share entire workspaces with collections, environments, and settings.' },
 ];
 
@@ -292,7 +292,7 @@ export default function NewFeaturesShowcase() {
                 <div className="text-center mb-24">
                     <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm text-orange-400 mb-5">
                         <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
-                        What's New in APIFlow
+                        What's New in DataCourier
                     </span>
                     <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5">
                         Three Powerful <span className="gradient-text">New Features</span>
@@ -315,7 +315,7 @@ export default function NewFeaturesShowcase() {
                         glowColor="bg-orange-500"
                         title="Background API Health Monitor"
                         subtitle="Always-On Monitoring"
-                        description="Automatically ping any endpoint on a schedule — from every 15 seconds to every 30 minutes. APIFlow keeps running checks in the System Tray even after you close the window, and fires native desktop alerts the moment something breaks."
+                        description="Automatically ping any endpoint on a schedule — from every 15 seconds to every 30 minutes. DataCourier keeps running checks in the System Tray even after you close the window, and fires native desktop alerts the moment something breaks."
                         points={HEALTH_MONITOR_POINTS}
                         pointsGrid="grid-cols-1 sm:grid-cols-2"
                         visual={<HealthMonitorVisual />}
@@ -336,7 +336,7 @@ export default function NewFeaturesShowcase() {
                         glowColor="bg-purple-500"
                         title="Secure Variables Vault"
                         subtitle="OS-Level Secret Storage"
-                        description="Stop putting API keys in plaintext environment files. APIFlow stores secrets in the native OS Keychain (Windows Credential Manager / macOS Keychain), then injects them into any request using the simple {{vault:KEY}} syntax."
+                        description="Stop putting API keys in plaintext environment files. DataCourier stores secrets in the native OS Keychain (Windows Credential Manager / macOS Keychain), then injects them into any request using the simple {{vault:KEY}} syntax."
                         points={VAULT_POINTS}
                         pointsGrid="grid-cols-1 sm:grid-cols-2"
                         visual={<VaultVisual />}

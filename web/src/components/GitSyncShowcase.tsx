@@ -270,7 +270,7 @@ export default function GitSyncShowcase() {
                                     <th className="py-4 px-6 text-left text-gray-400 font-medium">Feature</th>
                                     <th className="py-4 px-6 text-center text-gray-500 font-medium">Postman</th>
                                     <th className="py-4 px-6 text-center font-semibold">
-                                        <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">APIFlow</span>
+                                        <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">DataCourier</span>
                                     </th>
                                 </tr>
                             </thead>

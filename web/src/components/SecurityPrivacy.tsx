@@ -55,7 +55,7 @@ export default function SecurityPrivacy() {
                     </h2>
                     <p className="max-w-3xl mx-auto text-lg text-gray-400 leading-relaxed">
                         Trust should be earned through clear information and verifiable sources. Review how
-                        APIFlow is built, downloaded, and maintained before you install it.
+                        DataCourier is built, downloaded, and maintained before you install it.
                     </p>
                 </div>
 
