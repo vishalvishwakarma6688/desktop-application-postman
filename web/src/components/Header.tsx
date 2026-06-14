@@ -34,11 +34,13 @@ export default function Header() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
-                    <a href="/" className="flex items-center gap-2.5 group">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white font-bold text-sm group-hover:bg-orange-400 transition-colors glow-orange">
-                            A
-                        </div>
-                        <span className="font-bold text-lg text-white">API<span className="gradient-text">Flow</span></span>
+                    <a href="/" className="flex items-center gap-3 group">
+                        <img
+                            src="/datacourier.png"
+                            alt="DataCourier Logo"
+                            className="h-12 transition-transform"
+                        />
+                        {/* <span className="font-bold text-xl text-white">Data<span className="gradient-text">Courier</span></span> */}
                     </a>
 
                     {/* Desktop nav */}

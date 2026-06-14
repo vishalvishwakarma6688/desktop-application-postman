@@ -37,13 +37,15 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
                     {/* Brand column */}
                     <div className="lg:col-span-2">
-                        <a href="#" className="flex items-center gap-2.5 group mb-4">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white font-bold text-sm group-hover:bg-orange-400 transition-colors">
-                                A
-                            </div>
-                            <span className="font-bold text-lg text-white">
-                                API<span className="gradient-text">Flow</span>
-                            </span>
+                        <a href="#" className="flex items-center gap-3 group mb-4">
+                            <img
+                                src="/datacourier.png"
+                                alt="DataCourier Logo"
+                                className="h-12 transition-transform group-hover:scale-110"
+                            />
+                            {/* <span className="font-bold text-lg text-white">
+                                Data<span className="gradient-text">Courier</span>
+                            </span> */}
                         </a>
                         <p className="text-gray-400 text-sm mb-4 max-w-xs">
                             A powerful, free, and open-source desktop API testing tool for developers. Test, debug, and explore APIs with ease.
@@ -108,7 +110,7 @@ export default function Footer() {
                 {/* Bottom bar */}
                 <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-gray-500 text-center md:text-left">
-                        © {currentYear} APIFlow. All rights reserved.
+                        © {currentYear} DataCourier. All rights reserved.
                     </p>
                     <p className="text-sm text-gray-500 flex items-center gap-1">
                         Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" /> by developers, for developers

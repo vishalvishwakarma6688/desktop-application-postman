@@ -15,7 +15,7 @@ export const sendWelcomeEmail = async (userEmail, userName) => {
                 address: process.env.EMAIL_USER
             },
             to: userEmail,
-            subject: '🎉 Welcome to APIFlow - Let\'s Get Started!',
+            subject: 'Welcome to APIFlow - Let\'s Get Started!',
             html: getWelcomeEmailTemplate(userName)
         };
 

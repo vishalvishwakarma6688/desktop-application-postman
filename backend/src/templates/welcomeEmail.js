@@ -11,186 +11,198 @@ export const getWelcomeEmailTemplate = (userName) => {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #0f0f0f;
-            color: #e5e5e5;
+            background-color: #f5f5f5;
+            color: #333333;
         }
         .email-container {
             max-width: 600px;
-            margin: 0 auto;
-            background-color: #1a1a1a;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         .header {
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            padding: 40px 20px;
+            padding: 48px 40px;
             text-align: center;
         }
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: white;
-        }
         .logo-text {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 36px;
+            font-weight: 700;
             color: white;
             letter-spacing: -0.5px;
+            margin-bottom: 16px;
         }
-        .header h1 {
+        .header-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 400;
             margin: 0;
-            color: white;
-            font-size: 28px;
-            font-weight: 600;
         }
         .content {
-            padding: 40px 30px;
-            background-color: #1a1a1a;
+            padding: 48px 40px;
         }
         .greeting {
             font-size: 24px;
             font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 20px;
+            color: #1a1a1a;
+            margin-bottom: 24px;
         }
         .message {
             font-size: 16px;
-            line-height: 1.6;
-            color: #d1d5db;
-            margin-bottom: 20px;
+            line-height: 1.7;
+            color: #4b5563;
+            margin-bottom: 24px;
         }
-        .features {
-            background-color: #262626;
-            border-radius: 12px;
-            padding: 30px;
-            margin: 30px 0;
+        .message strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        .info-box {
+            background-color: #fef3f2;
             border-left: 4px solid #f97316;
-        }
-        .features h2 {
-            font-size: 20px;
-            font-weight: 600;
-            color: #ffffff;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        .feature-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            padding: 12px;
-            background-color: #1a1a1a;
-            border-radius: 8px;
-        }
-        .feature-item:last-child {
-            margin-bottom: 0;
-        }
-        .feature-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #f97316, #ea580c);
             border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            flex-shrink: 0;
-            font-size: 14px;
+            padding: 24px;
+            margin: 32px 0;
         }
-        .feature-text {
-            flex: 1;
-        }
-        .feature-title {
+        .info-box-title {
+            font-size: 18px;
             font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 4px;
+            color: #1a1a1a;
+            margin-top: 0;
+            margin-bottom: 12px;
         }
-        .feature-description {
-            font-size: 14px;
-            color: #9ca3af;
-            line-height: 1.5;
+        .info-box-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #4b5563;
+            margin: 0;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 32px 0;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
         }
         .cta-button {
             display: inline-block;
             background: linear-gradient(135deg, #f97316, #ea580c);
             color: white;
             text-decoration: none;
-            padding: 14px 32px;
-            border-radius: 8px;
+            padding: 16px 40px;
+            border-radius: 6px;
             font-weight: 600;
             font-size: 16px;
-            margin: 20px 0;
-            box-shadow: 0 4px 6px rgba(249, 115, 22, 0.3);
+            box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .quick-links {
-            background-color: #262626;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 30px 0;
+        .cta-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(249, 115, 22, 0.3);
         }
-        .quick-links h3 {
-            font-size: 16px;
+        .resources {
+            background-color: #f9fafb;
+            border-radius: 6px;
+            padding: 28px;
+            margin: 32px 0;
+        }
+        .resources-title {
+            font-size: 18px;
             font-weight: 600;
-            color: #ffffff;
+            color: #1a1a1a;
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .quick-link {
+        .resource-link {
             display: block;
             color: #f97316;
             text-decoration: none;
-            padding: 8px 0;
-            font-size: 14px;
+            padding: 10px 0;
+            font-size: 15px;
+            font-weight: 500;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .quick-link:hover {
-            text-decoration: underline;
+        .resource-link:last-child {
+            border-bottom: none;
+        }
+        .resource-link:hover {
+            color: #ea580c;
+        }
+        .support-section {
+            background-color: #f9fafb;
+            border-radius: 6px;
+            padding: 24px;
+            margin: 32px 0;
+            text-align: center;
+        }
+        .support-text {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 12px;
+        }
+        .support-email {
+            color: #f97316;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .support-email:hover {
+            color: #ea580c;
         }
         .footer {
-            background-color: #0f0f0f;
-            padding: 30px;
+            background-color: #f9fafb;
+            padding: 32px 40px;
             text-align: center;
-            border-top: 1px solid #262626;
+            border-top: 1px solid #e5e7eb;
         }
         .footer-text {
             font-size: 14px;
-            color: #9ca3af;
-            margin-bottom: 15px;
+            color: #6b7280;
+            margin-bottom: 16px;
             line-height: 1.6;
         }
-        .social-links {
+        .footer-links {
             margin: 20px 0;
         }
-        .social-link {
+        .footer-link {
             display: inline-block;
-            margin: 0 8px;
-            color: #9ca3af;
+            margin: 0 12px;
+            color: #6b7280;
             text-decoration: none;
             font-size: 14px;
+            font-weight: 500;
         }
-        .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #f97316, transparent);
-            margin: 30px 0;
+        .footer-link:hover {
+            color: #f97316;
+        }
+        .footer-separator {
+            color: #d1d5db;
+            margin: 0 4px;
+        }
+        .signature {
+            font-size: 16px;
+            color: #1a1a1a;
+            font-weight: 600;
+            margin-top: 24px;
         }
         @media only screen and (max-width: 600px) {
-            .content {
-                padding: 30px 20px;
+            .email-container {
+                margin: 0;
+                border-radius: 0;
             }
-            .features {
-                padding: 20px;
+            .content {
+                padding: 32px 24px;
+            }
+            .header {
+                padding: 36px 24px;
             }
             .greeting {
                 font-size: 20px;
+            }
+            .logo-text {
+                font-size: 28px;
             }
         }
     </style>
@@ -199,123 +211,69 @@ export const getWelcomeEmailTemplate = (userName) => {
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <div style="text-align: center;">
-                <div style="display: inline-block; background-color: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; line-height: 60px; font-size: 32px; font-weight: bold; margin-bottom: 15px;">
-                    A
-                </div>
-                <div class="logo-text">APIFlow</div>
-            </div>
-            <h1>Welcome to the Future of API Testing! 🚀</h1>
+            <div class="logo-text">APIFlow</div>
+            <p class="header-subtitle">Professional API Testing Platform</p>
         </div>
 
         <!-- Content -->
         <div class="content">
-            <div class="greeting">Hi ${userName}! 👋</div>
+            <div class="greeting">Welcome, ${userName}</div>
             
             <p class="message">
-                Thank you for joining <strong>APIFlow</strong>! We're thrilled to have you as part of our community. 
-                You now have access to a powerful, free, and open-source API testing platform designed specifically for developers like you.
+                Thank you for creating your APIFlow account. We're pleased to have you join our platform dedicated to streamlined API development and testing.
             </p>
 
             <p class="message">
-                Whether you're building REST APIs, testing webhooks, or exploring GraphQL endpoints, APIFlow has everything you need to streamline your workflow.
+                APIFlow provides you with comprehensive tools for testing REST APIs, managing request collections, handling environment variables, and maintaining detailed request histories—all within a native desktop application designed for professional developers.
             </p>
 
-            <div class="divider"></div>
-
-            <!-- Features Section -->
-            <div class="features">
-                <h2>✨ What You Can Do with APIFlow</h2>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">🎯</div>
-                    <div class="feature-text">
-                        <div class="feature-title">Powerful Request Builder</div>
-                        <div class="feature-description">Send HTTP requests with custom headers, body, authentication, and more</div>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">📁</div>
-                    <div class="feature-text">
-                        <div class="feature-title">Collections & Workspaces</div>
-                        <div class="feature-description">Organize your APIs into collections and workspaces for better project management</div>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">🔐</div>
-                    <div class="feature-text">
-                        <div class="feature-title">Environment Variables</div>
-                        <div class="feature-description">Manage different environments (dev, staging, production) with ease</div>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-text">
-                        <div class="feature-title">AI-Powered Assistant</div>
-                        <div class="feature-description">Get intelligent API insights, generate test cases, and debug responses with AI</div>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-text">
-                        <div class="feature-title">Request History</div>
-                        <div class="feature-description">Track all your API calls with detailed history and easy replay functionality</div>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-text">
-                        <div class="feature-title">Fast & Lightweight</div>
-                        <div class="feature-description">Native desktop application built with Electron for maximum performance</div>
-                    </div>
-                </div>
+            <div class="info-box">
+                <h3 class="info-box-title">Getting Started</h3>
+                <p class="info-box-text">
+                    Your account is now active. Launch the APIFlow desktop application to begin creating workspaces, organizing your API collections, and testing endpoints. Our platform is designed to integrate seamlessly into your development workflow.
+                </p>
             </div>
 
-            <!-- Quick Links -->
-            <div class="quick-links">
-                <h3>🔗 Quick Links to Get Started</h3>
-                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman" class="quick-link">📖 Documentation & Guides</a>
-                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman/issues" class="quick-link">💬 Community & Support</a>
-                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman/releases" class="quick-link">📥 Latest Downloads</a>
+            <div class="cta-section">
+                <a href="#" class="cta-button">Open APIFlow</a>
             </div>
 
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="#" class="cta-button">Launch APIFlow Desktop</a>
+            <div class="resources">
+                <h3 class="resources-title">Resources</h3>
+                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman" class="resource-link">Documentation</a>
+                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman/releases" class="resource-link">Latest Downloads</a>
+                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman/issues" class="resource-link">Support & Community</a>
             </div>
 
-            <div class="divider"></div>
+            <div class="support-section">
+                <p class="support-text">Need assistance or have questions?</p>
+                <a href="mailto:apiflow.support@gmail.com" class="support-email">apiflow.support@gmail.com</a>
+            </div>
 
             <p class="message">
-                <strong>Need Help?</strong><br>
-                If you have any questions or feedback, feel free to reach out to us at 
-                <a href="mailto:apiflow.support@gmail.com" style="color: #f97316;">apiflow.support@gmail.com</a>
+                We're committed to providing you with reliable tools for API development and testing.
             </p>
 
-            <p class="message">
-                Happy Testing! 🎉<br>
-                <strong>The APIFlow Team</strong>
+            <p class="signature">
+                Best regards,<br>
+                The APIFlow Team
             </p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
             <div class="footer-text">
-                <strong>APIFlow</strong> - A powerful, free, and open-source API testing tool for developers
+                <strong>APIFlow</strong> — Professional API Testing Platform
             </div>
             
-            <div class="social-links">
-                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman" class="social-link">GitHub</a>
-                <span style="color: #4b5563;">•</span>
-                <a href="mailto:apiflow.support@gmail.com" class="social-link">Support</a>
+            <div class="footer-links">
+                <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman" class="footer-link">GitHub</a>
+                <span class="footer-separator">•</span>
+                <a href="mailto:apiflow.support@gmail.com" class="footer-link">Support</a>
             </div>
 
-            <div class="footer-text" style="font-size: 12px; margin-top: 20px;">
-                You're receiving this email because you created an account on APIFlow.<br>
+            <div class="footer-text" style="font-size: 13px; margin-top: 24px; color: #9ca3af;">
+                You received this email because you created an account with APIFlow.<br>
                 © ${new Date().getFullYear()} APIFlow. All rights reserved.
             </div>
         </div>
