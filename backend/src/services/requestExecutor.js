@@ -1,4 +1,5 @@
 import axios from 'axios';
+import https from 'https';
 import { substituteVariables, substituteVariablesInObject } from './variableSubstitution.js';
 
 /**
@@ -51,9 +52,10 @@ const buildAuthHeaders = (auth) => {
  * 
  * @param {Object} requestConfig - Request configuration
  * @param {Array} environmentVariables - Environment variables for substitution
+ * @param {Object} settings - User settings configuration
  * @returns {Object} Response with status, data, headers, executionTime, and error
  */
-export const executeRequest = async (requestConfig, environmentVariables = []) => {
+export const executeRequest = async (requestConfig, environmentVariables = [], settings = {}) => {
     const startTime = Date.now();
 
     try {
@@ -74,8 +76,18 @@ export const executeRequest = async (requestConfig, environmentVariables = []) =
         const authConfig = substituteVariablesInObject(requestConfig.auth, environmentVariables);
         const authHeaders = buildAuthHeaders(authConfig);
 
-        // Merge headers (auth headers take precedence)
-        const headers = { ...configHeaders, ...authHeaders };
+        // Merge default headers from settings
+        const defaultHeadersObj = {};
+        if (settings && Array.isArray(settings.defaultHeaders)) {
+            settings.defaultHeaders.forEach(h => {
+                if (h.enabled !== false && h.key) {
+                    defaultHeadersObj[h.key] = substituteVariables(h.value, environmentVariables);
+                }
+            });
+        }
+
+        // Merge headers (config headers override default settings; auth headers take ultimate precedence)
+        const headers = { ...defaultHeadersObj, ...configHeaders, ...authHeaders };
 
         // Build query parameters
         const params = {};
@@ -141,6 +153,37 @@ export const executeRequest = async (requestConfig, environmentVariables = []) =
             }
         }
 
+        // Configure custom agent options for SSL Certificate Verification
+        const httpsAgentOptions = {};
+        if (settings && settings.sslVerify === false) {
+            httpsAgentOptions.rejectUnauthorized = false;
+        }
+        const httpsAgent = new https.Agent(httpsAgentOptions);
+
+        // Configure Proxy Settings
+        let proxy = false;
+        if (settings && settings.proxyEnabled && settings.proxyUrl) {
+            try {
+                const parsedUrl = new URL(settings.proxyUrl);
+                proxy = {
+                    protocol: parsedUrl.protocol.replace(':', ''),
+                    host: parsedUrl.hostname,
+                    port: parseInt(parsedUrl.port) || (parsedUrl.protocol === 'https:' ? 443 : 80)
+                };
+                if (parsedUrl.username || parsedUrl.password) {
+                    proxy.auth = {
+                        username: decodeURIComponent(parsedUrl.username),
+                        password: decodeURIComponent(parsedUrl.password)
+                    };
+                }
+            } catch (proxyError) {
+                console.warn('[CORS / PROXY] Invalid settings proxy URL:', settings.proxyUrl);
+            }
+        }
+
+        // Configure request timeout
+        const requestTimeout = settings && typeof settings.timeout === 'number' ? settings.timeout : 30000;
+
         // Execute request
         const response = await axios({
             method: requestConfig.method,
@@ -148,6 +191,9 @@ export const executeRequest = async (requestConfig, environmentVariables = []) =
             headers: { ...headers, ...extraHeaders },
             params,
             data,
+            httpsAgent,
+            proxy,
+            timeout: requestTimeout,
             validateStatus: () => true // Accept all status codes
         });
 

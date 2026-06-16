@@ -32,6 +32,11 @@ export const setupIpcHandlers = () => {
         return app.getPath(name as any);
     });
 
+    // Get app version
+    ipcMain.handle('app:getVersion', async () => {
+        return app.getVersion();
+    });
+
     // File writing handler for local workspace sync
     ipcMain.handle('fs:writeFiles', async (_, { dirPath, collections, environments }) => {
         try {

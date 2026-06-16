@@ -39,9 +39,16 @@ export const requestApi = {
 
     execute: async (
         id: string,
-        environmentId?: string
+        environmentId?: string,
+        settings?: {
+            sslVerify?: boolean;
+            timeout?: number;
+            proxyEnabled?: boolean;
+            proxyUrl?: string;
+            defaultHeaders?: { key: string; value: string; enabled: boolean }[];
+        }
     ): Promise<ApiResponse<ExecuteRequestResponse>> => {
-        const response = await api.post(`/requests/${id}/execute`, { environmentId });
+        const response = await api.post(`/requests/${id}/execute`, { environmentId, settings });
         return response.data;
     },
 

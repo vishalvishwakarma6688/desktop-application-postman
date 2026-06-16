@@ -377,7 +377,7 @@ export const duplicateRequest = async (req, res, next) => {
 // @access  Private
 export const executeRequestById = async (req, res, next) => {
     try {
-        const { environmentId } = req.body;
+        const { environmentId, settings } = req.body;
 
         // Find the request
         const request = await Request.findById(req.params.id);
@@ -412,7 +412,7 @@ export const executeRequestById = async (req, res, next) => {
         }
 
         // Execute the request
-        const result = await executeRequest(request, environmentVariables);
+        const result = await executeRequest(request, environmentVariables, settings);
 
         // Execute post-response script
         let testResults = [];

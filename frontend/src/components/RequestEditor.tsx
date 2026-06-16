@@ -93,7 +93,23 @@ export default function RequestEditor() {
     });
 
     const executeMutation = useMutation({
-        mutationFn: (id: string) => requestApi.execute(id, activeEnvironment?._id),
+        mutationFn: (id: string) => {
+            const sslVerify = localStorage.getItem('setting_ssl_verify') !== 'false';
+            const timeout = parseInt(localStorage.getItem('setting_timeout') || '30000');
+            const proxyEnabled = localStorage.getItem('setting_proxy_enabled') === 'true';
+            const proxyUrl = localStorage.getItem('setting_proxy_url') || '';
+            const defaultHeadersRaw = localStorage.getItem('setting_default_headers') || '[]';
+            let defaultHeaders = [];
+            try { defaultHeaders = JSON.parse(defaultHeadersRaw); } catch {}
+
+            return requestApi.execute(id, activeEnvironment?._id, {
+                sslVerify,
+                timeout,
+                proxyEnabled,
+                proxyUrl,
+                defaultHeaders
+            });
+        },
         onSuccess: (data) => {
             if (cancelledRef.current) return;
             if (data.success && data.data) {

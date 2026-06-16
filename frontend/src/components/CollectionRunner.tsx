@@ -145,7 +145,21 @@ export default function CollectionRunner({ collection, onClose }: Props) {
             setCurrentIdx(i);
 
             try {
-                const res = await requestApi.execute(requests[i]._id);
+                const sslVerify = localStorage.getItem('setting_ssl_verify') !== 'false';
+                const timeout = parseInt(localStorage.getItem('setting_timeout') || '30000');
+                const proxyEnabled = localStorage.getItem('setting_proxy_enabled') === 'true';
+                const proxyUrl = localStorage.getItem('setting_proxy_url') || '';
+                const defaultHeadersRaw = localStorage.getItem('setting_default_headers') || '[]';
+                let defaultHeaders = [];
+                try { defaultHeaders = JSON.parse(defaultHeadersRaw); } catch {}
+
+                const res = await requestApi.execute(requests[i]._id, undefined, {
+                    sslVerify,
+                    timeout,
+                    proxyEnabled,
+                    proxyUrl,
+                    defaultHeaders
+                });
                 const result = res.data?.result;
                 runResults.push({
                     request: requests[i],
