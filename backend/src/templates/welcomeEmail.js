@@ -5,7 +5,7 @@ export const getWelcomeEmailTemplate = (userName) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to APIFlow</title>
+    <title>Welcome to DataCourier</title>
     <style>
         body {
             margin: 0;
@@ -211,7 +211,7 @@ export const getWelcomeEmailTemplate = (userName) => {
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <div class="logo-text">APIFlow</div>
+            <div class="logo-text">DataCourier</div>
             <p class="header-subtitle">Professional API Testing Platform</p>
         </div>
 
@@ -220,22 +220,22 @@ export const getWelcomeEmailTemplate = (userName) => {
             <div class="greeting">Welcome, ${userName}</div>
             
             <p class="message">
-                Thank you for creating your APIFlow account. We're pleased to have you join our platform dedicated to streamlined API development and testing.
+                Thank you for creating your DataCourier account. We're pleased to have you join our platform dedicated to streamlined API development and testing.
             </p>
 
             <p class="message">
-                APIFlow provides you with comprehensive tools for testing REST APIs, managing request collections, handling environment variables, and maintaining detailed request histories—all within a native desktop application designed for professional developers.
+                DataCourier provides you with comprehensive tools for testing REST APIs, managing request collections, handling environment variables, and maintaining detailed request histories—all within a native desktop application designed for professional developers.
             </p>
 
             <div class="info-box">
                 <h3 class="info-box-title">Getting Started</h3>
                 <p class="info-box-text">
-                    Your account is now active. Launch the APIFlow desktop application to begin creating workspaces, organizing your API collections, and testing endpoints. Our platform is designed to integrate seamlessly into your development workflow.
+                    Your account is now active. Launch the DataCourier desktop application to begin creating workspaces, organizing your API collections, and testing endpoints. Our platform is designed to integrate seamlessly into your development workflow.
                 </p>
             </div>
 
             <div class="cta-section">
-                <a href="#" class="cta-button">Open APIFlow</a>
+                <a href="#" class="cta-button">Open DataCourier</a>
             </div>
 
             <div class="resources">
@@ -247,7 +247,7 @@ export const getWelcomeEmailTemplate = (userName) => {
 
             <div class="support-section">
                 <p class="support-text">Need assistance or have questions?</p>
-                <a href="mailto:apiflow.support@gmail.com" class="support-email">apiflow.support@gmail.com</a>
+                <a href="mailto:datacourier.support@gmail.com" class="support-email">datacourier.support@gmail.com</a>
             </div>
 
             <p class="message">
@@ -256,25 +256,25 @@ export const getWelcomeEmailTemplate = (userName) => {
 
             <p class="signature">
                 Best regards,<br>
-                The APIFlow Team
+                The DataCourier Team
             </p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
             <div class="footer-text">
-                <strong>APIFlow</strong> — Professional API Testing Platform
+                <strong>DataCourier</strong> — Professional API Testing Platform
             </div>
             
             <div class="footer-links">
                 <a href="https://github.com/vishalvishwakarma6688/desktop-application-postman" class="footer-link">GitHub</a>
                 <span class="footer-separator">•</span>
-                <a href="mailto:apiflow.support@gmail.com" class="footer-link">Support</a>
+                <a href="mailto:datacourier.support@gmail.com" class="footer-link">Support</a>
             </div>
 
             <div class="footer-text" style="font-size: 13px; margin-top: 24px; color: #9ca3af;">
-                You received this email because you created an account with APIFlow.<br>
-                © ${new Date().getFullYear()} APIFlow. All rights reserved.
+                You received this email because you created an account with DataCourier.<br>
+                © ${new Date().getFullYear()} DataCourier. All rights reserved.
             </div>
         </div>
     </div>

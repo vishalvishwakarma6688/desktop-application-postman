@@ -97,7 +97,7 @@ export default function Header() {
             </div>
 
             {/* Mobile menu with slide animation */}
-            <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? 'max-h-[330px] opacity-100' : 'max-h-0 opacity-0'}`}>
                 <div className="bg-gray-900/95 backdrop-blur-md border-t border-gray-800">
                     <div className="px-4 py-4 space-y-3">
                         {NAV.map((n, i) => (

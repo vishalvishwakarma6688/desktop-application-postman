@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/useAuthStore';
+import InviteAcceptPage from './pages/InviteAcceptPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
@@ -10,6 +11,7 @@ import UpdateNotification from './components/UpdateNotification';
 import { useTabStore } from './store/useTabStore';
 import { requestApi } from './features/requests/api';
 import { authApi } from './features/auth/api';
+import { useCollaboration } from './hooks/useCollaboration';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -25,6 +27,9 @@ function App() {
     const { tabs, activeTabId, updateTab } = useTabStore();
     const [pathname, setPathname] = useState(window.location.pathname);
     const [showPalette, setShowPalette] = useState(false);
+
+    // Initialize collaboration (connects to WebSocket when authenticated)
+    useCollaboration();
 
     // Fetch user data on app initialization if token exists but user object is missing
     useEffect(() => {
@@ -58,6 +63,28 @@ function App() {
         window.addEventListener('popstate', onPop);
         return () => window.removeEventListener('popstate', onPop);
     }, []);
+
+    // Handle pending invitations after login/registration
+    useEffect(() => {
+        if (isAuthenticated) {
+            const pendingInviteToken = localStorage.getItem('pending_invite_token');
+            if (pendingInviteToken) {
+                localStorage.removeItem('pending_invite_token');
+                
+                import('./features/collaboration/api').then(({ collaborationApi }) => {
+                    collaborationApi.acceptInvitation(pendingInviteToken)
+                        .then((res) => {
+                            toast.success(`Successfully joined workspace: ${res.workspace?.name || 'Shared Workspace'}`);
+                            queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+                        })
+                        .catch((err) => {
+                            const errMsg = err.response?.data?.message || 'Failed to accept invitation';
+                            toast.error(errMsg);
+                        });
+                });
+            }
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -124,7 +151,9 @@ function App() {
             <div className="h-screen w-screen overflow-hidden bg-gray-900 text-gray-100">
                 {pathname === '/oauth-callback'
                     ? <OAuthCallbackPage />
-                    : isAuthenticated ? <DashboardPage /> : <LoginPage />
+                    : pathname.startsWith('/invite/')
+                        ? <InviteAcceptPage token={pathname.split('/invite/')[1]} />
+                        : isAuthenticated ? <DashboardPage /> : <LoginPage />
                 }
                 {showPalette && isAuthenticated && <CommandPalette onClose={() => setShowPalette(false)} />}
                 {/* Update notification popup — shown when a new version is available */}

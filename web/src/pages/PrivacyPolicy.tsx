@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
 
                 <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-5 mb-10">
                     <p className="text-gray-300 leading-relaxed">
-                        APIFlow is an open-source, server-backed API development tool. This policy explains
+                        DataCourier is an open-source, server-backed API development tool. This policy explains
                         what information the current application processes, where it is stored, and which
                         third-party services may receive it.
                     </p>
@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
                     <section className="mb-10">
                         <h2 className="text-2xl font-semibold text-white mb-4">1. Information You Provide</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            When you create an account or use APIFlow, the backend may store:
+                            When you create an account or use DataCourier, the backend may store:
                         </p>
                         <ul className="list-disc text-gray-300 space-y-2 ml-6">
                             <li>Your name, email address, optional avatar, and authentication provider.</li>
@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
                     <section className="mb-10">
                         <h2 className="text-2xl font-semibold text-white mb-4">2. How API Requests Are Processed</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            Requests sent from APIFlow are executed by the configured APIFlow backend. The
+                            Requests sent from DataCourier are executed by the configured DataCourier backend. The
                             backend receives the request URL, method, headers, authentication values, query
                             parameters, body, and selected environment variables needed to execute the request.
                         </p>
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
                         <h2 className="text-2xl font-semibold text-white mb-4">3. Optional AI Features</h2>
                         <p className="text-gray-300 leading-relaxed">
                             When you intentionally use an AI feature, relevant prompt content may be sent by
-                            the APIFlow backend to Google Gemini. Depending on the feature, this can include
+                            the DataCourier backend to Google Gemini. Depending on the feature, this can include
                             your question, request URL, headers, request body, error details, or portions of an
                             API response. Review and remove sensitive values before using AI features.
                         </p>
@@ -91,21 +91,21 @@ export default function PrivacyPolicy() {
                     <section className="mb-10">
                         <h2 className="text-2xl font-semibold text-white mb-4">5. Third-Party Services</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow may communicate with third-party services when required for a feature:
+                            DataCourier may communicate with third-party services when required for a feature:
                         </p>
                         <ul className="list-disc text-gray-300 space-y-2 ml-6">
                             <li>Google or GitHub when you choose their OAuth sign-in options.</li>
                             <li>Google Gemini when you intentionally use an AI-assisted feature.</li>
                             <li>GitHub to check for application updates and retrieve official releases.</li>
                             <li>The destination APIs that you explicitly configure and send requests to.</li>
-                            <li>The hosting and database providers used by the configured APIFlow backend.</li>
+                            <li>The hosting and database providers used by the configured DataCourier backend.</li>
                         </ul>
                     </section>
 
                     <section className="mb-10">
                         <h2 className="text-2xl font-semibold text-white mb-4">6. Analytics and Advertising</h2>
                         <p className="text-gray-300 leading-relaxed">
-                            The current APIFlow codebase does not include third-party advertising or dedicated
+                            The current DataCourier codebase does not include third-party advertising or dedicated
                             product-analytics tracking. Normal operational logs may still be created by the
                             backend, hosting provider, database provider, destination APIs, and third-party
                             services used by the application.
@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
                         <h2 className="text-2xl font-semibold text-white mb-4">7. Security and Data Retention</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
                             Local-account passwords are hashed before storage. However, no system can guarantee
-                            absolute security, and APIFlow does not currently claim that all stored request data,
+                            absolute security, and DataCourier does not currently claim that all stored request data,
                             credentials, or environment variables are encrypted at rest.
                         </p>
                         <p className="text-gray-300 leading-relaxed">
@@ -158,7 +158,7 @@ export default function PrivacyPolicy() {
                     <section className="mb-10">
                         <h2 className="text-2xl font-semibold text-white mb-4">10. Policy Changes</h2>
                         <p className="text-gray-300 leading-relaxed">
-                            This policy may change as APIFlow evolves. Material changes will be reflected on this
+                            This policy may change as DataCourier evolves. Material changes will be reflected on this
                             page by updating the date above.
                         </p>
                     </section>

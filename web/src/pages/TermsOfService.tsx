@@ -20,7 +20,7 @@ export default function TermsOfService() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            By accessing and using APIFlow, you accept and agree to be bound by the terms and provisions of this agreement.
+                            By accessing and using DataCourier, you accept and agree to be bound by the terms and provisions of this agreement.
                             If you do not agree to these terms, please do not use our service.
                         </p>
                     </section>
@@ -28,7 +28,7 @@ export default function TermsOfService() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">2. Description of Service</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow is a free, open-source desktop application for API testing and development. We provide tools to:
+                            DataCourier is a free, open-source desktop application for API testing and development. We provide tools to:
                         </p>
                         <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                             <li>Create and manage API requests</li>
@@ -55,7 +55,7 @@ export default function TermsOfService() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">4. Acceptable Use</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            You agree not to use APIFlow to:
+                            You agree not to use DataCourier to:
                         </p>
                         <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                             <li>Violate any laws or regulations</li>
@@ -70,15 +70,15 @@ export default function TermsOfService() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">5. Intellectual Property</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow is open-source software licensed under the MIT License. You retain all rights to the content
-                            you create using our service. The APIFlow name, logo, and branding are protected trademarks.
+                            DataCourier is open-source software licensed under the MIT License. You retain all rights to the content
+                            you create using our service. The DataCourier name, logo, and branding are protected trademarks.
                         </p>
                     </section>
 
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">6. Data and Privacy</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            Your use of APIFlow is also governed by our Privacy Policy. We collect and process data as described
+                            Your use of DataCourier is also governed by our Privacy Policy. We collect and process data as described
                             in that policy. You are responsible for ensuring you have the right to share any data you input into the service.
                         </p>
                     </section>
@@ -98,7 +98,7 @@ export default function TermsOfService() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">8. Disclaimer of Warranties</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow is provided "as is" without warranties of any kind, either express or implied. We do not warrant that:
+                            DataCourier is provided "as is" without warranties of any kind, either express or implied. We do not warrant that:
                         </p>
                         <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                             <li>The service will be error-free or uninterrupted</li>
@@ -111,7 +111,7 @@ export default function TermsOfService() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-white mb-4">9. Limitation of Liability</h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            To the maximum extent permitted by law, APIFlow shall not be liable for any indirect, incidental,
+                            To the maximum extent permitted by law, DataCourier shall not be liable for any indirect, incidental,
                             special, consequential, or punitive damages resulting from your use or inability to use the service.
                         </p>
                     </section>

@@ -14,6 +14,7 @@ import Documentation from '@/pages/Documentation';
 import License from '@/pages/License';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
+import InviteOnboardingPage from '@/pages/InviteOnboardingPage';
 
 function HomePage() {
     return (
@@ -43,6 +44,7 @@ export default function App() {
                         <Route path="/license" element={<License />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
+                        <Route path="/invite/:token" element={<InviteOnboardingPage />} />
                     </Routes>
                 </main>
                 <Footer />

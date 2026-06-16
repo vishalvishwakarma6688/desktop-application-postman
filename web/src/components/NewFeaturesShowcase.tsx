@@ -34,6 +34,13 @@ const LAN_POINTS = [
     { icon: Users, label: 'Team-Friendly', desc: 'Share entire workspaces with collections, environments, and settings.' },
 ];
 
+const COLLABORATION_POINTS = [
+    { icon: Users, label: 'Real-time Presence', desc: 'See who is online in your workspace with dynamic avatar status bars.' },
+    { icon: Radio, label: 'Live Editor Sync', desc: 'See typing indicators and cursor changes propagate instantly to all collaborators.' },
+    { icon: ShieldCheck, label: 'Role-Based Access', desc: 'Manage access levels (Owner, Admin, Editor, Viewer) dynamically.' },
+    { icon: Bell, label: 'Secure Email Invites', desc: 'Invite team members securely via automated email links with token verification.' },
+];
+
 /* ─── Animated intersection hook ─── */
 function useVisible() {
     const ref = useRef<HTMLDivElement>(null);
@@ -277,6 +284,66 @@ function LanVisual() {
     );
 }
 
+function CollaborationVisual() {
+    return (
+        <div className="glass rounded-2xl overflow-hidden border border-white/10">
+            <div className="border-b border-white/10 px-4 py-3 flex items-center gap-2">
+                <Users className="h-4 w-4 text-orange-400" />
+                <span className="text-xs font-semibold text-gray-300">Live Collaboration Workspace</span>
+                <div className="ml-auto flex items-center gap-1.5">
+                    {/* Avatars mock */}
+                    <div className="flex -space-x-1.5 mr-1">
+                        <div className="h-5.5 w-5.5 rounded-full bg-rose-500 border border-gray-900 flex items-center justify-center text-[8px] font-bold text-white">JD</div>
+                        <div className="h-5.5 w-5.5 rounded-full bg-cyan-500 border border-gray-900 flex items-center justify-center text-[8px] font-bold text-white">AM</div>
+                        <div className="h-5.5 w-5.5 rounded-full bg-amber-500 border border-gray-900 flex items-center justify-center text-[8px] font-bold text-white">SK</div>
+                    </div>
+                    <span className="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">3 Online</span>
+                </div>
+            </div>
+            <div className="p-4 space-y-3">
+                {/* Active user status mock */}
+                <div className="rounded-lg bg-gray-900/60 border border-white/5 px-3 py-2.5 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-cyan-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                        AM
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-medium text-gray-200">Alex Morgan</span>
+                            <span className="text-[9px] px-1 bg-cyan-500/15 text-cyan-400 rounded">Editor</span>
+                        </div>
+                        <p className="text-[10px] text-orange-400 mt-0.5 animate-pulse">Typing in URL path...</p>
+                    </div>
+                    <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
+                </div>
+                
+                <div className="rounded-lg bg-gray-900/60 border border-white/5 px-3 py-2.5 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-rose-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                        JD
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-medium text-gray-200">John Doe</span>
+                            <span className="text-[9px] px-1 bg-yellow-500/15 text-yellow-400 rounded">Owner</span>
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Idle (last active 2m ago)</p>
+                    </div>
+                    <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
+                </div>
+            </div>
+            
+            {/* Editor conflict prevention mock */}
+            <div className="border-t border-white/5 bg-emerald-500/5 px-4 py-3">
+                <div className="flex gap-2.5 items-center">
+                    <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                        Conflict-free document updates via <span className="text-emerald-300 font-semibold">Operational Transformation (OT)</span> protocol.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Main Section ─── */
 export default function NewFeaturesShowcase() {
     return (
@@ -295,7 +362,7 @@ export default function NewFeaturesShowcase() {
                         What's New in DataCourier
                     </span>
                     <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5">
-                        Three Powerful <span className="gradient-text">New Features</span>
+                        Four Powerful <span className="gradient-text">New Features</span>
                     </h2>
                     <p className="max-w-2xl mx-auto text-lg text-gray-400">
                         Built to make API development faster, safer, and more collaborative — without leaving your desktop.
@@ -362,6 +429,28 @@ export default function NewFeaturesShowcase() {
                         points={LAN_POINTS}
                         pointsGrid="grid-cols-1 sm:grid-cols-2"
                         visual={<LanVisual />}
+                    />
+
+                    {/* Separator */}
+                    <div className="flex items-center gap-6">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-800 to-transparent" />
+                    </div>
+
+                    {/* ── Feature 4: Live Collaboration ── */}
+                    <FeatureBlock
+                        badge="New Feature"
+                        badgeColor="border-orange-500/30 bg-orange-500/10 text-orange-400"
+                        icon={Users}
+                        iconColor="text-orange-400"
+                        iconBg="bg-orange-500/10"
+                        glowColor="bg-orange-500"
+                        title="Real-Time Workspace Collaboration"
+                        subtitle="Sync with your team"
+                        description="Work on API requests together in real-time. See who is currently online in the workspace, watch edit conflicts resolve automatically, track active cursors, and manage workspace membership role-based permissions."
+                        points={COLLABORATION_POINTS}
+                        pointsGrid="grid-cols-1 sm:grid-cols-2"
+                        visual={<CollaborationVisual />}
+                        reverse
                     />
                 </div>
             </div>

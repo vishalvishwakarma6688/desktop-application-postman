@@ -14,7 +14,7 @@ export default function Documentation() {
                 </Link>
 
                 <h1 className="text-4xl font-bold text-white mb-4">Documentation</h1>
-                <p className="text-gray-400 mb-8">Everything you need to know about APIFlow</p>
+                <p className="text-gray-400 mb-8">Everything you need to know about DataCourier</p>
 
                 <div className="prose prose-invert prose-orange max-w-none">
                     <section className="mb-8">
@@ -23,10 +23,10 @@ export default function Documentation() {
                             Getting Started
                         </h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow is a powerful desktop application for testing and debugging APIs. Get started in minutes:
+                            DataCourier is a powerful desktop application for testing and debugging APIs. Get started in minutes:
                         </p>
                         <ol className="list-decimal list-inside text-gray-300 space-y-2 ml-4">
-                            <li>Download and install APIFlow for your operating system</li>
+                            <li>Download and install DataCourier for your operating system</li>
                             <li>Create an account or sign in</li>
                             <li>Create your first workspace</li>
                             <li>Start making API requests</li>
@@ -80,7 +80,7 @@ export default function Documentation() {
                             Making Requests
                         </h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow supports all standard HTTP methods:
+                            DataCourier supports all standard HTTP methods:
                         </p>
                         <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                             <li><span className="text-orange-400 font-semibold">GET</span> - Retrieve data from a server</li>
@@ -97,7 +97,7 @@ export default function Documentation() {
                             Authentication
                         </h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow supports multiple authentication methods:
+                            DataCourier supports multiple authentication methods:
                         </p>
                         <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                             <li><span className="text-orange-400 font-semibold">Bearer Token</span> - JWT and OAuth 2.0 tokens</li>
@@ -129,7 +129,7 @@ export default function Documentation() {
                             Local-First Git Sync
                         </h2>
                         <p className="text-gray-300 leading-relaxed mb-4">
-                            APIFlow's standout feature: link any workspace to a local folder on your machine and version-control
+                            DataCourier's standout feature: link any workspace to a local folder on your machine and version-control
                             your API collections with Git — no cloud required.
                         </p>
 
@@ -187,7 +187,7 @@ export default function Documentation() {
                                 <h3 className="text-xl font-semibold text-white mb-2">Team Collaboration via Git</h3>
                                 <p className="text-gray-300 leading-relaxed">
                                     Share API collections with your team using the same Git workflow you use for code.
-                                    Team members clone the repo, open APIFlow, link the same folder, and click
+                                    Team members clone the repo, open DataCourier, link the same folder, and click
                                     <span className="text-orange-400 font-semibold"> "Load from Disk"</span> to import everything.
                                     Use branches and pull requests for API reviews.
                                 </p>

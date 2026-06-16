@@ -10,6 +10,7 @@ import requestRoutes from './routes/requests.js';
 import environmentRoutes from './routes/environments.js';
 import historyRoutes from './routes/history.js';
 import aiRoutes from './routes/ai.js';
+import collaborationRoutes from './routes/collaboration.js';
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/environments', environmentRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/collaboration', collaborationRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

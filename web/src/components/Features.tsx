@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Send, FolderOpen, Globe, History, Sparkles, Shield,
     Code2, Zap, Terminal, GitBranch, Play,
-    Lock, Radio, Wifi, ChevronLeft, ChevronRight
+    Lock, Radio, Wifi, ChevronLeft, ChevronRight, Users
 } from 'lucide-react';
 
 const FEATURES = [
@@ -33,6 +33,16 @@ const FEATURES = [
         color: 'text-cyan-400',
         bg: 'bg-cyan-400/10',
         border: 'border-cyan-400/20',
+        highlight: true,
+        badge: 'New',
+    },
+    {
+        icon: Users,
+        title: 'Real-Time Collaboration',
+        description: 'Work together on requests and collections in real-time. Manage membership roles and permissions seamlessly.',
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/10',
+        border: 'border-amber-400/20',
         highlight: true,
         badge: 'New',
     },

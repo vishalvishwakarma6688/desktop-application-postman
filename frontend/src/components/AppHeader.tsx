@@ -10,6 +10,8 @@ import HistoryPanel from './HistoryPanel';
 import SettingsPanel from './SettingsPanel';
 import GitSyncPanel from './GitSyncPanel';
 import LanShareModal from './LanShareModal';
+import CollaboratorsAvatars from './collaboration/CollaboratorsAvatars';
+import CollaboratorsPanel from './collaboration/CollaboratorsPanel';
 
 export default function AppHeader() {
     const { user, logout } = useAuthStore();
@@ -24,6 +26,7 @@ export default function AppHeader() {
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
     const [showGitPanel, setShowGitPanel] = useState(false);
     const [showLanSharePanel, setShowLanSharePanel] = useState(false);
+    const [showCollaboratorsPanel, setShowCollaboratorsPanel] = useState(false);
 
     const { data: envsData } = useQuery({
         queryKey: ['environments', currentWorkspace?._id],
@@ -125,6 +128,12 @@ export default function AppHeader() {
 
             {/* Right side actions */}
             <div className="flex items-center gap-1">
+                {/* Collaborators */}
+                <CollaboratorsAvatars onOpenPanel={() => setShowCollaboratorsPanel(true)} />
+
+                {/* Divider */}
+                {currentWorkspace && <div className="h-4 w-px bg-gray-700 mx-1" />}
+
                 {currentWorkspace && (
                     <div className="flex items-center gap-1">
                         <button
@@ -204,6 +213,9 @@ export default function AppHeader() {
                     workspaceName={currentWorkspace!.name}
                     onClose={() => setShowLanSharePanel(false)}
                 />
+            )}
+            {showCollaboratorsPanel && (
+                <CollaboratorsPanel onClose={() => setShowCollaboratorsPanel(false)} />
             )}
         </div>
     );
