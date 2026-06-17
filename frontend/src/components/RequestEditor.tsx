@@ -184,6 +184,9 @@ export default function RequestEditor() {
         if (isCurlCommand(newUrl)) {
             const parsed = parseCurl(newUrl);
             if (parsed) {
+                if (parsed.insecure) {
+                    localStorage.setItem('setting_ssl_verify', 'false');
+                }
                 // Extract query params from URL
                 try {
                     const urlObj = new URL(parsed.url);
@@ -202,7 +205,11 @@ export default function RequestEditor() {
                         auth: parsed.auth
                     });
 
-                    toast.success('cURL command imported successfully');
+                    if (parsed.insecure) {
+                        toast.success('cURL command imported (SSL Verification disabled globally via settings)');
+                    } else {
+                        toast.success('cURL command imported successfully');
+                    }
                 } catch {
                     patch({
                         method: parsed.method,
@@ -211,7 +218,11 @@ export default function RequestEditor() {
                         body: parsed.body,
                         auth: parsed.auth
                     });
-                    toast.success('cURL command imported successfully');
+                    if (parsed.insecure) {
+                        toast.success('cURL command imported (SSL Verification disabled globally via settings)');
+                    } else {
+                        toast.success('cURL command imported successfully');
+                    }
                 }
                 return;
             } else {

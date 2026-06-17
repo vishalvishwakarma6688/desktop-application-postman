@@ -151,6 +151,10 @@ export default function Sidebar() {
                     throw new Error('Failed to parse cURL command');
                 }
 
+                if (parsed.insecure) {
+                    localStorage.setItem('setting_ssl_verify', 'false');
+                }
+
                 // Create a new collection for the cURL import
                 const colRes = await collectionApi.create({
                     name: 'Imported from cURL',
@@ -175,7 +179,12 @@ export default function Sidebar() {
                 queryClient.invalidateQueries({ queryKey: ['collections'] });
                 queryClient.invalidateQueries({ queryKey: ['requests'] });
                 setExpandedCollections(prev => new Set([...prev, collection._id]));
-                toast.success('cURL imported successfully');
+                
+                if (parsed.insecure) {
+                    toast.success('cURL command imported (SSL Verification disabled globally via settings)');
+                } else {
+                    toast.success('cURL imported successfully');
+                }
             } else {
                 // Try to parse as JSON
                 const json = JSON.parse(pasteContent);

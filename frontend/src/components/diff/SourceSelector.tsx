@@ -52,14 +52,14 @@ export function SourceSelector({
             label: `${historyEntry.requestSnapshot.method} ${historyEntry.requestSnapshot.url} - ${new Date(historyEntry.executedAt).toLocaleString()}`,
             data: {
                 id: historyEntry._id,
-                requestId: typeof historyEntry.request === 'string' ? historyEntry.request : historyEntry.request._id,
+                requestId: typeof historyEntry.request === 'string' ? historyEntry.request : historyEntry.request?._id,
                 timestamp: new Date(historyEntry.executedAt).getTime(),
-                status: historyEntry.response.status,
-                statusText: historyEntry.response.statusText,
-                headers: historyEntry.response.headers || {},
-                body: historyEntry.response.data,
+                status: historyEntry.response?.status || 0,
+                statusText: historyEntry.response?.statusText || 'Error',
+                headers: historyEntry.response?.headers || {},
+                body: historyEntry.response?.data || { error: historyEntry.error?.message || 'Request Failed' },
                 contentType: 'application/json',
-                duration: historyEntry.response.executionTime,
+                duration: historyEntry.response?.executionTime || 0,
             },
         };
         onSourceSelected(source);
@@ -167,12 +167,12 @@ export function SourceSelector({
                                                 <span className="text-sm font-medium text-white">
                                                     {entry.requestSnapshot.method} {entry.requestSnapshot.url}
                                                 </span>
-                                                <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(entry.response.status)}`}>
-                                                    {entry.response.status}
+                                                <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(entry.response?.status || 0)}`}>
+                                                    {entry.response ? entry.response.status : 'Error'}
                                                 </span>
                                             </div>
                                             <div className="text-xs text-gray-400">
-                                                {new Date(entry.executedAt).toLocaleString()} • {entry.response.executionTime}ms
+                                                {new Date(entry.executedAt).toLocaleString()} • {entry.response ? `${entry.response.executionTime}ms` : `Error: ${entry.error?.message || 'Failed'}`}
                                             </div>
                                         </button>
                                     ))}

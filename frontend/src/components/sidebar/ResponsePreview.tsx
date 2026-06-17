@@ -42,7 +42,7 @@ export default function ResponsePreview({ requestId }: Props) {
 
     const { response, requestSnapshot, executedAt, error } = lastResponse;
     const statusColor =
-        error ? 'text-red-400' :
+        error || !response ? 'text-red-400' :
             response.status >= 200 && response.status < 300 ? 'text-emerald-400' :
                 response.status >= 300 && response.status < 400 ? 'text-blue-400' :
                     response.status >= 400 && response.status < 500 ? 'text-amber-400' :
@@ -70,10 +70,10 @@ export default function ResponsePreview({ requestId }: Props) {
                             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                         )}
                         <span className={`text-sm font-semibold ${statusColor}`}>
-                            {error ? 'Failed' : `${response.status} ${response.statusText}`}
+                            {error || !response ? 'Failed' : `${response.status} ${response.statusText}`}
                         </span>
                     </div>
-                    {response.executionTime && (
+                    {response?.executionTime && (
                         <div className="flex items-center gap-1 text-[10px] text-gray-400">
                             <Clock className="h-3 w-3" />
                             {response.executionTime}ms
@@ -115,15 +115,15 @@ export default function ResponsePreview({ requestId }: Props) {
                         <p className="text-[10px] text-gray-600 uppercase tracking-wide">Response Body</p>
                         <div className="rounded bg-gray-800/60 border border-gray-700 px-2 py-1.5">
                             <pre className="text-[10px] text-gray-300 font-mono whitespace-pre-wrap break-words">
-                                {formatData(response.data)}
+                                {formatData(response?.data)}
                             </pre>
-                            {formatData(response.data).length >= 150 && (
+                            {formatData(response?.data).length >= 150 && (
                                 <p className="text-[9px] text-gray-600 mt-1">...</p>
                             )}
                         </div>
 
                         {/* Headers Count */}
-                        {response.headers && Object.keys(response.headers).length > 0 && (
+                        {response?.headers && Object.keys(response.headers).length > 0 && (
                             <div className="pt-2">
                                 <p className="text-[10px] text-gray-600">
                                     {Object.keys(response.headers).length} response headers

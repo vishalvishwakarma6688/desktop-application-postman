@@ -68,6 +68,9 @@ export default function NewRequestEditor({ tabId, initialData }: Props) {
         if (isCurlCommand(val)) {
             const parsed = parseCurl(val);
             if (parsed) {
+                if (parsed.insecure) {
+                    localStorage.setItem('setting_ssl_verify', 'false');
+                }
                 // Extract query params from URL
                 try {
                     const urlObj = new URL(parsed.url);
@@ -84,7 +87,11 @@ export default function NewRequestEditor({ tabId, initialData }: Props) {
                     setBody(parsed.body);
                     setAuth(parsed.auth);
 
-                    toast.success('cURL command imported successfully');
+                    if (parsed.insecure) {
+                        toast.success('cURL command imported (SSL Verification disabled globally via settings)');
+                    } else {
+                        toast.success('cURL command imported successfully');
+                    }
                 } catch {
                     setMethod(parsed.method as Method);
                     setUrl(parsed.url);
@@ -92,7 +99,11 @@ export default function NewRequestEditor({ tabId, initialData }: Props) {
                     setBody(parsed.body);
                     setAuth(parsed.auth);
 
-                    toast.success('cURL command imported successfully');
+                    if (parsed.insecure) {
+                        toast.success('cURL command imported (SSL Verification disabled globally via settings)');
+                    } else {
+                        toast.success('cURL command imported successfully');
+                    }
                 }
                 return;
             } else {

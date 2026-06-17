@@ -236,7 +236,9 @@ export default function ResponsePanel({ response, isSending, onCancel, testResul
                                 <XCircle className="h-4 w-4 text-red-400" />
                                 <span className="text-sm font-medium text-red-400">Request Failed</span>
                             </div>
-                            <p className="text-sm text-red-300 font-mono">{response.error}</p>
+                            <p className="text-sm text-red-300 font-mono">
+                                {typeof response.error === 'object' ? response.error.message : String(response.error)}
+                            </p>
                         </div>
                     ) : view === 'tests' ? (
                         <div className="space-y-2">

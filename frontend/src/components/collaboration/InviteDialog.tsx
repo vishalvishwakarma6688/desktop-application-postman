@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Mail, Shield, MessageSquare } from 'lucide-react';
+import { X, Mail, Shield, MessageSquare, CheckCircle, Check, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { collaborationApi } from '@/features/collaboration/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,14 +16,24 @@ export default function InviteDialog({ workspaceId, workspaceName, onClose }: In
     const [role, setRole] = useState<'viewer' | 'editor' | 'admin'>('editor');
     const [message, setMessage] = useState('');
     const [emailError, setEmailError] = useState('');
+    const [copied, setCopied] = useState(false);
+    const [successData, setSuccessData] = useState<{
+        emailSent: boolean;
+        invitationUrl: string;
+        message: string;
+    } | null>(null);
     const queryClient = useQueryClient();
 
     const sendInvitationMutation = useMutation({
         mutationFn: () => collaborationApi.sendInvitation(workspaceId, { email, role, message }),
-        onSuccess: () => {
-            toast.success(`Invitation sent to ${email}`);
+        onSuccess: (response: any) => {
+            const data = response.data;
+            setSuccessData({
+                emailSent: data.emailSent !== false,
+                invitationUrl: data.invitationUrl || '',
+                message: data.message || 'Invitation created successfully'
+            });
             queryClient.invalidateQueries({ queryKey: ['collaboration', 'invitations', workspaceId] });
-            onClose();
         },
         onError: (error: any) => {
             const errorMessage = error?.response?.data?.message || 'Failed to send invitation';
@@ -53,11 +63,87 @@ export default function InviteDialog({ workspaceId, workspaceName, onClose }: In
         sendInvitationMutation.mutate();
     };
 
+    const handleCopyLink = () => {
+        if (!successData?.invitationUrl) return;
+        navigator.clipboard.writeText(successData.invitationUrl).then(() => {
+            setCopied(true);
+            toast.success('Invitation link copied');
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
     const roleDescriptions = {
         viewer: 'Can view requests and collections',
         editor: 'Can view and edit requests and collections',
         admin: 'Can manage workspace and its members',
     };
+
+    if (successData) {
+        return (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-md shadow-2xl p-6 flex flex-col items-center text-center">
+                    <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
+                        <CheckCircle className="h-6 w-6" />
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-gray-100 mb-1">Invitation Created!</h3>
+                    <p className="text-sm text-gray-400 mb-4">
+                        For user: <span className="text-orange-400 font-medium">{email}</span> as <span className="font-medium">{role}</span>
+                    </p>
+
+                    {successData.emailSent ? (
+                        <div className="rounded border border-emerald-900/50 bg-emerald-950/20 px-3 py-2 text-xs text-green-400 w-full text-left mb-4 flex items-start gap-2">
+                            <span className="shrink-0 font-bold">✓</span>
+                            <span>An invitation email has been sent successfully. You can also copy the link below.</span>
+                        </div>
+                    ) : (
+                        <div className="rounded border border-amber-900/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-400 w-full text-left mb-4 flex items-start gap-2">
+                            <span className="shrink-0 font-bold">⚠️</span>
+                            <span>The invitation was created, but the email could not be sent. Please share the link manually.</span>
+                        </div>
+                    )}
+
+                    <div className="w-full mb-6">
+                        <label className="block text-xs font-medium text-gray-500 uppercase text-left mb-1.5">Invitation Link</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                readOnly
+                                value={successData.invitationUrl}
+                                className="flex-1 rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-gray-300 font-mono focus:outline-none"
+                            />
+                            <button
+                                onClick={handleCopyLink}
+                                className="rounded bg-orange-500 hover:bg-orange-600 px-4 py-2 text-xs font-semibold text-white transition-colors flex items-center gap-1.5 shrink-0"
+                            >
+                                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                {copied ? 'Copied' : 'Copy'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3 w-full justify-end">
+                        <button
+                            onClick={() => {
+                                setSuccessData(null);
+                                setEmail('');
+                                setMessage('');
+                            }}
+                            className="px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded transition-colors"
+                        >
+                            Invite Another
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="px-4 py-2 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
+                        >
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

@@ -65,14 +65,24 @@ export const sendInvitation = async (req, res) => {
         });
 
         // Send email
-        await sendCollaborationInvitation({
-            to: email,
-            inviterName,
-            workspaceName: workspace.name,
-            role,
-            invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`,
-            message
-        });
+        let emailSent = true;
+        let emailError = null;
+        const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`;
+
+        try {
+            await sendCollaborationInvitation({
+                to: email,
+                inviterName,
+                workspaceName: workspace.name,
+                role,
+                invitationUrl,
+                message
+            });
+        } catch (emailErr) {
+            console.error('Error sending invitation email:', emailErr);
+            emailSent = false;
+            emailError = emailErr.message;
+        }
 
         // Audit log
         await CollaborationAudit.create({
@@ -85,7 +95,12 @@ export const sendInvitation = async (req, res) => {
         });
 
         res.status(201).json({
-            message: 'Invitation sent successfully',
+            message: emailSent 
+                ? 'Invitation sent successfully' 
+                : 'Invitation created, but notification email could not be sent.',
+            emailSent,
+            emailError,
+            invitationUrl,
             invitation: {
                 id: invitation._id,
                 email: invitation.invitedEmail,

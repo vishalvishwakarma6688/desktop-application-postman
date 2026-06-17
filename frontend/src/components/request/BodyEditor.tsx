@@ -13,7 +13,15 @@ const BODY_TYPES: RequestBody['type'][] = ['none', 'json', 'form-data', 'raw'];
 export default function BodyEditor({ body, onChange }: Props) {
     const [rawLang, setRawLang] = useState<'text' | 'html' | 'xml'>('text');
 
-    const jsonValue = typeof body.content === 'string' ? body.content : JSON.stringify(body.content, null, 2);
+    const jsonValue = useMemo(() => {
+        if (body.content === undefined || body.content === null) return '';
+        if (typeof body.content === 'string') return body.content;
+        try {
+            return JSON.stringify(body.content, null, 2);
+        } catch {
+            return '';
+        }
+    }, [body.content]);
 
     const jsonError = useMemo(() => {
         if (body.type !== 'json' || !jsonValue.trim()) return null;
