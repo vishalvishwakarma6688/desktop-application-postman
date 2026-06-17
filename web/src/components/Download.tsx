@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Monitor, Terminal, Apple, Download as DownloadIcon } from 'lucide-react';
+import { Monitor, Terminal, Apple, Download as DownloadIcon, Check } from 'lucide-react';
 import DownloadButton from './DownloadButton';
 import ReleaseVerification from './ReleaseVerification';
 import { useLatestRelease } from '@/hooks/useLatestRelease';
@@ -39,12 +39,22 @@ export default function Download() {
     const [visible, setVisible] = useState(false);
     const { downloadLinks, releaseDetails, loading } = useLatestRelease();
 
+    const [copiedDeb, setCopiedDeb] = useState(false);
+    const [copiedAppImage, setCopiedAppImage] = useState(false);
+
     useEffect(() => {
         setVisible(true);
     }, []);
 
-    const handleCopyCommand = (command: string) => {
+    const handleCopyCommand = (command: string, type: 'deb' | 'appimage') => {
         navigator.clipboard.writeText(command);
+        if (type === 'deb') {
+            setCopiedDeb(true);
+            setTimeout(() => setCopiedDeb(false), 2000);
+        } else {
+            setCopiedAppImage(true);
+            setTimeout(() => setCopiedAppImage(false), 2000);
+        }
     };
 
     return (
@@ -117,14 +127,21 @@ export default function Download() {
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-semibold text-orange-400">Ubuntu / Debian (.deb)</span>
                                         <button
-                                            onClick={() => handleCopyCommand(`wget -O postman-like.deb ${downloadLinks.linuxDeb} && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y`)}
-                                            className="text-xs text-gray-400 hover:text-orange-400 transition-colors"
+                                            onClick={() => handleCopyCommand(`wget -O datacourier.deb ${downloadLinks.linuxDeb} && sudo dpkg -i datacourier.deb || sudo apt-get install -f -y`, 'deb')}
+                                            className="text-xs flex items-center gap-1 text-gray-400 hover:text-orange-450 transition-colors"
                                         >
-                                            Copy
+                                            {copiedDeb ? (
+                                                <>
+                                                    <Check className="h-3.5 w-3.5 text-emerald-450" />
+                                                    <span className="text-emerald-450 font-semibold">Copied!</span>
+                                                </>
+                                            ) : (
+                                                'Copy'
+                                            )}
                                         </button>
                                     </div>
                                     <code className="text-xs text-gray-300 break-all block">
-                                        wget -O postman-like.deb {downloadLinks.linuxDeb} && sudo dpkg -i postman-like.deb || sudo apt-get install -f -y
+                                        wget -O datacourier.deb {downloadLinks.linuxDeb} && sudo dpkg -i datacourier.deb || sudo apt-get install -f -y
                                     </code>
                                 </div>
                             )}
@@ -135,14 +152,21 @@ export default function Download() {
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-semibold text-blue-400">Universal Linux (AppImage)</span>
                                         <button
-                                            onClick={() => handleCopyCommand(`wget -O postman-like.AppImage ${downloadLinks.linuxAppImage} && chmod +x postman-like.AppImage && ./postman-like.AppImage`)}
-                                            className="text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                                            onClick={() => handleCopyCommand(`wget -O datacourier.AppImage ${downloadLinks.linuxAppImage} && chmod +x datacourier.AppImage && ./datacourier.AppImage`, 'appimage')}
+                                            className="text-xs flex items-center gap-1 text-gray-400 hover:text-blue-450 transition-colors"
                                         >
-                                            Copy
+                                            {copiedAppImage ? (
+                                                <>
+                                                    <Check className="h-3.5 w-3.5 text-emerald-450" />
+                                                    <span className="text-emerald-450 font-semibold">Copied!</span>
+                                                </>
+                                            ) : (
+                                                'Copy'
+                                            )}
                                         </button>
                                     </div>
                                     <code className="text-xs text-gray-300 break-all block">
-                                        wget -O postman-like.AppImage {downloadLinks.linuxAppImage} && chmod +x postman-like.AppImage && ./postman-like.AppImage
+                                        wget -O datacourier.AppImage {downloadLinks.linuxAppImage} && chmod +x datacourier.AppImage && ./datacourier.AppImage
                                     </code>
                                 </div>
                             )}
