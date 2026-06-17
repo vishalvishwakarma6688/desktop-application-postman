@@ -36,10 +36,10 @@ const GITHUB_RELEASES_URL = 'https://github.com/vishalvishwakarma6688/desktop-ap
 
 // Fallback URLs in case API fails
 const FALLBACK_LINKS: DownloadLinks = {
-    windows: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-win.exe',
-    linuxAppImage: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.AppImage',
-    linuxDeb: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.3.3/Postman-Like-linux.deb',
-    version: 'v1.3.3',
+    windows: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.4.4/DataCourier-1.4.4-win.exe',
+    linuxAppImage: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.4.4/DataCourier-1.4.4-linux.AppImage',
+    linuxDeb: 'https://github.com/vishalvishwakarma6688/desktop-application-postman/releases/download/v1.4.4/DataCourier-1.4.4-linux.deb',
+    version: 'v1.4.4',
 };
 
 const FALLBACK_RELEASE_DETAILS: ReleaseDetails = {
@@ -55,7 +55,12 @@ const getDownloadLinks = (assets: ReleaseAsset[], version: string): DownloadLink
     const windows = assets.find(a =>
         a.name.endsWith('.exe') &&
         !a.name.toLowerCase().includes('elevate') &&
-        (a.name.includes('Postman-Like') || a.name.includes('postman-like'))
+        (
+            a.name.includes('Postman-Like') || 
+            a.name.includes('postman-like') || 
+            a.name.toLowerCase().includes('datacourier') ||
+            a.name.toLowerCase().includes('data-courier')
+        )
     );
 
     const linuxAppImage = assets.find(a => a.name.endsWith('.AppImage'));
