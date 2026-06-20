@@ -26,8 +26,7 @@ export default function InviteDialog({ workspaceId, workspaceName, onClose }: In
 
     const sendInvitationMutation = useMutation({
         mutationFn: () => collaborationApi.sendInvitation(workspaceId, { email, role, message }),
-        onSuccess: (response: any) => {
-            const data = response.data;
+        onSuccess: (data: any) => {
             setSuccessData({
                 emailSent: data.emailSent !== false,
                 invitationUrl: data.invitationUrl || '',
