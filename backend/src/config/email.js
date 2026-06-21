@@ -16,38 +16,44 @@ try {
 }
 
 console.log('📧 Email Configuration:');
-console.log('   HOST:', 'smtp.gmail.com');
+console.log('   HOST:', '64.233.184.109 (Gmail IPv4 - bypassing DNS)');
+console.log('   SERVERNAME:', 'smtp.gmail.com');
 console.log('   PORT:', 587, '(STARTTLS)');
 console.log('   USER:', process.env.EMAIL_USER ? `${process.env.EMAIL_USER.substring(0, 3)}***` : 'NOT SET');
 console.log('   PASS:', process.env.EMAIL_PASS ? '***configured***' : 'NOT SET');
-console.log('   DNS:', 'IPv4 only (forced)');
+console.log('   DNS:', 'BYPASSED - Using direct IPv4 address');
 console.log('   TLS:', 'Required');
-console.log('   IPv6:', 'Disabled');
+console.log('   IPv6:', 'IMPOSSIBLE - Direct IPv4 connection');
 
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.error('❌ EMAIL_USER or EMAIL_PASS not configured in .env file');
 }
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587, // Changed to 587 with STARTTLS - more reliable than 465
-    secure: false, // false for 587, use STARTTLS
-    requireTLS: true, // Force TLS upgrade
-    family: 4, // Force IPv4 - critical for avoiding ENETUNREACH errors
+    host: '64.233.184.109', // Gmail's IPv4 SMTP server (bypasses DNS to force IPv4)
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    family: 4, // Force IPv4
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    pool: true, // Use pooled connections
-    maxConnections: 3, // Reduced from 5 to avoid connection issues
-    maxMessages: 100, // Maximum messages per connection
-    rateDelta: 1000, // Minimum time between messages
-    rateLimit: 5, // Maximum messages per rateDelta
-    connectionTimeout: 15000, // 15 seconds connection timeout (increased)
-    greetingTimeout: 15000, // 15 seconds greeting timeout
-    socketTimeout: 45000, // 45 seconds socket timeout (increased)
-    debug: true, // Enable debug output
-    logger: true // Log information to console
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 100,
+    rateDelta: 1000,
+    rateLimit: 5,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 45000,
+    tls: {
+        // Don't fail on hostname mismatch since we're using IP address
+        servername: 'smtp.gmail.com',
+        rejectUnauthorized: true
+    },
+    debug: true,
+    logger: true
 });
 
 // Verify transporter configuration on startup
