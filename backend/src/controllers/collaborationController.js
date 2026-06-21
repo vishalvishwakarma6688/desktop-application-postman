@@ -69,6 +69,10 @@ export const sendInvitation = async (req, res) => {
         let emailError = null;
         const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`;
 
+        console.log('\n🚀 Attempting to send invitation email...');
+        console.log('   Frontend URL:', process.env.FRONTEND_URL || 'http://localhost:5173');
+        console.log('   Full invitation URL:', invitationUrl);
+
         try {
             await sendCollaborationInvitation({
                 to: email,
@@ -78,8 +82,12 @@ export const sendInvitation = async (req, res) => {
                 invitationUrl,
                 message
             });
+            console.log('✅ Email sent successfully via emailService');
         } catch (emailErr) {
-            console.error('Error sending invitation email:', emailErr);
+            console.error('\n❌ FAILED to send invitation email in controller:');
+            console.error('   Error Name:', emailErr.name);
+            console.error('   Error Message:', emailErr.message);
+            console.error('   Error Stack:', emailErr.stack);
             emailSent = false;
             emailError = emailErr.message;
         }
@@ -95,8 +103,8 @@ export const sendInvitation = async (req, res) => {
         });
 
         res.status(201).json({
-            message: emailSent 
-                ? 'Invitation sent successfully' 
+            message: emailSent
+                ? 'Invitation sent successfully'
                 : 'Invitation created, but notification email could not be sent.',
             emailSent,
             emailError,

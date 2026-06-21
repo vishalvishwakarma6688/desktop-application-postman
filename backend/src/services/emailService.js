@@ -8,6 +8,10 @@ import { getWelcomeEmailTemplate } from '../templates/welcomeEmail.js';
  * @returns {Promise<boolean>} - Returns true if email sent successfully
  */
 export const sendWelcomeEmail = async (userEmail, userName) => {
+    console.log('\n📧 ===== SENDING WELCOME EMAIL =====');
+    console.log('   To:', userEmail);
+    console.log('   Name:', userName);
+
     try {
         const mailOptions = {
             from: {
@@ -19,11 +23,21 @@ export const sendWelcomeEmail = async (userEmail, userName) => {
             html: getWelcomeEmailTemplate(userName)
         };
 
+        console.log('   📤 Attempting to send email...');
         const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Welcome email sent to ${userEmail}. Message ID: ${info.messageId}`);
+        console.log(`   ✅ SUCCESS! Welcome email sent to ${userEmail}`);
+        console.log('   Message ID:', info.messageId);
+        console.log('   Response:', info.response);
+        console.log('===== EMAIL SEND COMPLETE =====\n');
         return true;
     } catch (error) {
-        console.error(`❌ Error sending welcome email to ${userEmail}:`, error.message);
+        console.error('\n   ❌ ERROR SENDING WELCOME EMAIL');
+        console.error('   To:', userEmail);
+        console.error('   Error Type:', error.name);
+        console.error('   Error Message:', error.message);
+        console.error('   Error Code:', error.code);
+        console.error('   Full Error:', error);
+        console.error('===== EMAIL SEND FAILED =====\n');
         // Don't throw error - we don't want registration to fail if email fails
         return false;
     }
@@ -73,21 +87,39 @@ export const sendTestEmail = async (testEmail) => {
  * @returns {Promise<boolean>} - Returns true if email sent successfully
  */
 export const sendCollaborationInvitation = async ({ to, inviterName, workspaceName, role, invitationUrl, message }) => {
-    try {
-        const roleDescriptions = {
-            viewer: 'view requests and collections',
-            editor: 'view and edit requests and collections',
-            admin: 'manage the workspace and its members'
-        };
+    console.log('\n📧 ===== SENDING COLLABORATION INVITATION EMAIL =====');
+    console.log('   To:', to);
+    console.log('   Inviter:', inviterName);
+    console.log('   Workspace:', workspaceName);
+    console.log('   Role:', role);
+    console.log('   Invitation URL:', invitationUrl);
+    console.log('   Has Message:', !!message);
 
-        const mailOptions = {
-            from: {
-                name: 'DataCourier',
-                address: process.env.EMAIL_USER
-            },
-            to,
-            subject: `${inviterName} invited you to collaborate on ${workspaceName}`,
-            html: `
+    const maxRetries = 3;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            if (attempt > 1) {
+                console.log(`   🔄 Retry attempt ${attempt}/${maxRetries}`);
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+
+            const roleDescriptions = {
+                viewer: 'view requests and collections',
+                editor: 'view and edit requests and collections',
+                admin: 'manage the workspace and its members'
+            };
+
+            const mailOptions = {
+                from: {
+                    name: 'DataCourier',
+                    address: process.env.EMAIL_USER
+                },
+                to,
+                subject: `${inviterName} invited you to collaborate on ${workspaceName}`,
+                html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
                     <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <div style="text-align: center; margin-bottom: 30px;">
@@ -139,13 +171,33 @@ export const sendCollaborationInvitation = async ({ to, inviterName, workspaceNa
                     </div>
                 </div>
             `
-        };
+            };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Collaboration invitation sent to ${to}. Message ID: ${info.messageId}`);
-        return true;
-    } catch (error) {
-        console.error(`❌ Error sending collaboration invitation to ${to}:`, error.message);
-        throw error;
+            console.log('   📤 Attempting to send email...');
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`   ✅ SUCCESS! Collaboration invitation sent to ${to}`);
+            console.log('   Message ID:', info.messageId);
+            console.log('   Response:', info.response);
+            console.log('   Accepted:', info.accepted);
+            console.log('   Rejected:', info.rejected);
+            console.log('===== EMAIL SEND COMPLETE =====\n');
+            return true;
+        } catch (error) {
+            lastError = error;
+            console.error(`\n   ❌ Attempt ${attempt}/${maxRetries} FAILED`);
+            console.error('   Error Type:', error.name);
+            console.error('   Error Message:', error.message);
+            console.error('   Error Code:', error.code);
+
+            if (attempt === maxRetries) {
+                console.error('\n   ❌ ALL RETRY ATTEMPTS EXHAUSTED');
+                console.error('   To:', to);
+                console.error('   Error Command:', error.command);
+                console.error('   Full Error:', error);
+                console.error('===== EMAIL SEND FAILED =====\n');
+            }
+        }
     }
+
+    throw lastError;
 };

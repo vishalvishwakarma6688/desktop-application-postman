@@ -63,7 +63,7 @@ export default function UpdateNotification() {
     if (dismissed || state === 'idle') return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 w-80 rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-50 w-[350px] rounded-xl border border-gray-700 bg-gray-900 shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-950">
                 <div className="flex items-center gap-2">
@@ -97,14 +97,14 @@ export default function UpdateNotification() {
                         <div className="flex gap-2">
                             <button
                                 onClick={handleDownload}
-                                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors whitespace-nowrap"
                             >
                                 <Download className="h-4 w-4" />
                                 Download
                             </button>
                             <button
                                 onClick={handleDismiss}
-                                className="flex-1 rounded-lg bg-gray-800 px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors"
+                                className="w-24 shrink-0 rounded-lg bg-gray-800 px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors"
                             >
                                 Later
                             </button>
@@ -141,14 +141,14 @@ export default function UpdateNotification() {
                         <div className="flex gap-2">
                             <button
                                 onClick={handleInstall}
-                                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700 transition-colors whitespace-nowrap"
                             >
                                 <RefreshCw className="h-4 w-4" />
                                 Restart & Install
                             </button>
                             <button
                                 onClick={handleDismiss}
-                                className="flex-1 rounded-lg bg-gray-800 px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors"
+                                className="w-24 shrink-0 rounded-lg bg-gray-800 px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-gray-200 transition-colors"
                             >
                                 Later
                             </button>
