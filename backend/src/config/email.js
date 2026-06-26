@@ -59,15 +59,20 @@ const transporter = nodemailer.createTransport({
 // Verify transporter configuration on startup
 transporter.isEmailAvailable = false;
 
-transporter.verify(function (error, success) {
-    if (error) {
-        console.error('❌ Email transporter verification failed:', error.message);
-        transporter.isEmailAvailable = false;
-    } else {
-        console.log('✅ Email server is ready to send messages');
-        console.log('✅ Connection pooling enabled');
-        transporter.isEmailAvailable = true;
-    }
-});
+if (process.env.RESEND_API_KEY) {
+    console.log('✅ Email service: Resend API is configured (RESEND_API_KEY)');
+    transporter.isEmailAvailable = true;
+} else {
+    transporter.verify(function (error, success) {
+        if (error) {
+            console.error('❌ Email transporter verification failed:', error.message);
+            transporter.isEmailAvailable = false;
+        } else {
+            console.log('✅ Email server is ready to send messages');
+            console.log('✅ Connection pooling enabled');
+            transporter.isEmailAvailable = true;
+        }
+    });
+}
 
 export default transporter;

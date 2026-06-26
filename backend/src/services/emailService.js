@@ -1,5 +1,37 @@
 import transporter from '../config/email.js';
 import { getWelcomeEmailTemplate } from '../templates/welcomeEmail.js';
+import axios from 'axios';
+
+/**
+ * Send email using Resend API over HTTPS (port 443)
+ */
+const sendEmailViaResend = async ({ to, subject, html }) => {
+    const fromName = 'DataCourier';
+    const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
+    
+    console.log(`   📤 Sending email via Resend API from ${fromName} <${fromEmail}> to ${to}...`);
+    
+    try {
+        const response = await axios.post('https://api.resend.com/emails', {
+            from: `${fromName} <${fromEmail}>`,
+            to: [to],
+            subject: subject,
+            html: html
+        }, {
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('   ✅ Resend API response:', response.data);
+        return { success: true, messageId: response.data.id };
+    } catch (error) {
+        const errorMsg = error.response?.data?.message || error.message;
+        console.error('   ❌ Resend API sending failed:', errorMsg, error.response?.data || '');
+        throw new Error(`Resend email sending failed: ${errorMsg}`);
+    }
+};
 
 /**
  * Send welcome email to newly registered user
@@ -19,17 +51,27 @@ export const sendWelcomeEmail = async (userEmail, userName) => {
     }
 
     try {
+        const subject = 'Welcome to DataCourier - Let\'s Get Started!';
+        const html = getWelcomeEmailTemplate(userName);
+
+        if (process.env.RESEND_API_KEY) {
+            await sendEmailViaResend({ to: userEmail, subject, html });
+            console.log(`   ✅ SUCCESS! Welcome email sent to ${userEmail} via Resend`);
+            console.log('===== EMAIL SEND COMPLETE =====\n');
+            return true;
+        }
+
         const mailOptions = {
             from: {
                 name: 'DataCourier',
                 address: process.env.EMAIL_USER
             },
             to: userEmail,
-            subject: 'Welcome to DataCourier - Let\'s Get Started!',
-            html: getWelcomeEmailTemplate(userName)
+            subject,
+            html
         };
 
-        console.log('   📤 Attempting to send email...');
+        console.log('   📤 Attempting to send email via SMTP...');
         const info = await transporter.sendMail(mailOptions);
         console.log(`   ✅ SUCCESS! Welcome email sent to ${userEmail}`);
         console.log('   Message ID:', info.messageId);
@@ -107,6 +149,73 @@ export const sendCollaborationInvitation = async ({ to, inviterName, workspaceNa
         throw new Error('SMTP server is unreachable or ports are blocked by hosting provider');
     }
 
+    const roleDescriptions = {
+        viewer: 'view requests and collections',
+        editor: 'view and edit requests and collections',
+        admin: 'manage the workspace and its members'
+    };
+
+    const subject = `${inviterName} invited you to collaborate on ${workspaceName}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #f97316; margin: 0;">DataCourier</h1>
+                    <p style="color: #666; font-size: 14px; margin-top: 5px;">Collaboration Invitation</p>
+                </div>
+                
+                <h2 style="color: #1f2937; margin-bottom: 20px;">You've been invited!</h2>
+                
+                <p style="color: #4b5563; line-height: 1.6;">
+                    <strong>${inviterName}</strong> has invited you to collaborate on the workspace 
+                    <strong style="color: #f97316;">${workspaceName}</strong>.
+                </p>
+                
+                ${message ? `
+                <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; color: #92400e; font-style: italic;">"${message}"</p>
+                </div>
+                ` : ''}
+                
+                <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 0; color: #4b5563;">
+                        <strong>Your Role:</strong> ${role.charAt(0).toUpperCase() + role.slice(1)}
+                    </p>
+                    <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 14px;">
+                        You'll be able to ${roleDescriptions[role]}.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${invitationUrl}" 
+                       style="background-color: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+                        Accept Invitation
+                    </a>
+                </div>
+                
+                <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin-top: 20px;">
+                    This invitation will expire in 7 days. If the button doesn't work, copy and paste this link into your browser:
+                </p>
+                <p style="color: #9ca3af; font-size: 12px; word-break: break-all;">
+                    ${invitationUrl}
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
+                
+                <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
+                    If you didn't expect this invitation, you can safely ignore this email.
+                </p>
+            </div>
+        </div>
+    `;
+
+    if (process.env.RESEND_API_KEY) {
+        await sendEmailViaResend({ to, subject, html });
+        console.log(`   ✅ SUCCESS! Collaboration invitation sent to ${to} via Resend`);
+        console.log('===== EMAIL SEND COMPLETE =====\n');
+        return true;
+    }
+
     const maxRetries = 3;
     let lastError = null;
 
@@ -118,74 +227,17 @@ export const sendCollaborationInvitation = async ({ to, inviterName, workspaceNa
                 await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             }
 
-            const roleDescriptions = {
-                viewer: 'view requests and collections',
-                editor: 'view and edit requests and collections',
-                admin: 'manage the workspace and its members'
-            };
-
             const mailOptions = {
                 from: {
                     name: 'DataCourier',
                     address: process.env.EMAIL_USER
                 },
                 to,
-                subject: `${inviterName} invited you to collaborate on ${workspaceName}`,
-                html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
-                    <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div style="text-align: center; margin-bottom: 30px;">
-                            <h1 style="color: #f97316; margin: 0;">DataCourier</h1>
-                            <p style="color: #666; font-size: 14px; margin-top: 5px;">Collaboration Invitation</p>
-                        </div>
-                        
-                        <h2 style="color: #1f2937; margin-bottom: 20px;">You've been invited!</h2>
-                        
-                        <p style="color: #4b5563; line-height: 1.6;">
-                            <strong>${inviterName}</strong> has invited you to collaborate on the workspace 
-                            <strong style="color: #f97316;">${workspaceName}</strong>.
-                        </p>
-                        
-                        ${message ? `
-                        <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-                            <p style="margin: 0; color: #92400e; font-style: italic;">"${message}"</p>
-                        </div>
-                        ` : ''}
-                        
-                        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                            <p style="margin: 0; color: #4b5563;">
-                                <strong>Your Role:</strong> ${role.charAt(0).toUpperCase() + role.slice(1)}
-                            </p>
-                            <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 14px;">
-                                You'll be able to ${roleDescriptions[role]}.
-                            </p>
-                        </div>
-                        
-                        <div style="text-align: center; margin: 30px 0;">
-                            <a href="${invitationUrl}" 
-                               style="background-color: #f97316; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
-                                Accept Invitation
-                            </a>
-                        </div>
-                        
-                        <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin-top: 20px;">
-                            This invitation will expire in 7 days. If the button doesn't work, copy and paste this link into your browser:
-                        </p>
-                        <p style="color: #9ca3af; font-size: 12px; word-break: break-all;">
-                            ${invitationUrl}
-                        </p>
-                        
-                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
-                        
-                        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-                            If you didn't expect this invitation, you can safely ignore this email.
-                        </p>
-                    </div>
-                </div>
-            `
+                subject,
+                html
             };
 
-            console.log('   📤 Attempting to send email...');
+            console.log('   📤 Attempting to send email via SMTP...');
             const info = await transporter.sendMail(mailOptions);
             console.log(`   ✅ SUCCESS! Collaboration invitation sent to ${to}`);
             console.log('   Message ID:', info.messageId);
