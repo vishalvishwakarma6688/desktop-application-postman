@@ -57,7 +57,6 @@ const collaborationInvitationSchema = new mongoose.Schema({
 });
 
 // Indexes
-collaborationInvitationSchema.index({ token: 1 });
 collaborationInvitationSchema.index({ workspaceId: 1, invitedEmail: 1 });
 collaborationInvitationSchema.index({ status: 1, expiresAt: 1 });
 
