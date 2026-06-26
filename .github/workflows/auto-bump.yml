@@ -3,7 +3,7 @@ name: Auto Bump & Tag Version
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'frontend/**'
 
@@ -44,7 +44,7 @@ jobs:
           NEW_VERSION=$(node -p "require('./frontend/package.json').version")
           git add frontend/package.json
           git commit -m "chore(release): bump version to v$NEW_VERSION [skip ci]"
-          git push origin main
+          git push origin master
 
       - name: Create & Push Tag
         run: |
