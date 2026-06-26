@@ -34,6 +34,42 @@ const sendEmailViaResend = async ({ to, subject, html }) => {
 };
 
 /**
+ * Send email using Brevo API over HTTPS (port 443)
+ */
+const sendEmailViaBrevo = async ({ to, subject, html }) => {
+    const fromName = 'DataCourier';
+    const fromEmail = process.env.EMAIL_USER || 'datacourier.support@gmail.com';
+    
+    console.log(`   📤 Sending email via Brevo API from ${fromName} <${fromEmail}> to ${to}...`);
+    
+    try {
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+            sender: {
+                name: fromName,
+                email: fromEmail
+            },
+            to: [{
+                email: to
+            }],
+            subject: subject,
+            htmlContent: html
+        }, {
+            headers: {
+                'api-key': process.env.BREVO_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('   ✅ Brevo API response:', response.data);
+        return { success: true, messageId: response.data.messageId };
+    } catch (error) {
+        const errorMsg = error.response?.data?.message || error.message;
+        console.error('   ❌ Brevo API sending failed:', errorMsg, error.response?.data || '');
+        throw new Error(`Brevo email sending failed: ${errorMsg}`);
+    }
+};
+
+/**
  * Send welcome email to newly registered user
  * @param {string} userEmail - The email address of the new user
  * @param {string} userName - The name of the new user
@@ -57,6 +93,11 @@ export const sendWelcomeEmail = async (userEmail, userName) => {
         if (process.env.RESEND_API_KEY) {
             await sendEmailViaResend({ to: userEmail, subject, html });
             console.log(`   ✅ SUCCESS! Welcome email sent to ${userEmail} via Resend`);
+            console.log('===== EMAIL SEND COMPLETE =====\n');
+            return true;
+        } else if (process.env.BREVO_API_KEY) {
+            await sendEmailViaBrevo({ to: userEmail, subject, html });
+            console.log(`   ✅ SUCCESS! Welcome email sent to ${userEmail} via Brevo`);
             console.log('===== EMAIL SEND COMPLETE =====\n');
             return true;
         }
@@ -212,6 +253,11 @@ export const sendCollaborationInvitation = async ({ to, inviterName, workspaceNa
     if (process.env.RESEND_API_KEY) {
         await sendEmailViaResend({ to, subject, html });
         console.log(`   ✅ SUCCESS! Collaboration invitation sent to ${to} via Resend`);
+        console.log('===== EMAIL SEND COMPLETE =====\n');
+        return true;
+    } else if (process.env.BREVO_API_KEY) {
+        await sendEmailViaBrevo({ to, subject, html });
+        console.log(`   ✅ SUCCESS! Collaboration invitation sent to ${to} via Brevo`);
         console.log('===== EMAIL SEND COMPLETE =====\n');
         return true;
     }
