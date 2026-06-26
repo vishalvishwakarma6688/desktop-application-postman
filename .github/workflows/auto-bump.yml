@@ -1,0 +1,53 @@
+name: Auto Bump & Tag Version
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    # Skip if the commit message contains [skip ci] or was made by release bot
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AUTO_BUMP_PAT }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump Version
+        working-directory: frontend
+        run: |
+          # Increment patch version (e.g., 1.4.8 -> 1.4.9)
+          npm version patch --no-git-tag-version
+
+      - name: Commit & Push Version Change
+        run: |
+          NEW_VERSION=$(node -p "require('./frontend/package.json').version")
+          git add frontend/package.json
+          git commit -m "chore(release): bump version to v$NEW_VERSION [skip ci]"
+          git push origin main
+
+      - name: Create & Push Tag
+        run: |
+          NEW_VERSION=$(node -p "require('./frontend/package.json').version")
+          git tag "v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
