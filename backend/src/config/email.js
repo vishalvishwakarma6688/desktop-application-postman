@@ -57,12 +57,16 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify transporter configuration on startup
+transporter.isEmailAvailable = false;
+
 transporter.verify(function (error, success) {
     if (error) {
-        console.error('❌ Email transporter verification failed:', error);
+        console.error('❌ Email transporter verification failed:', error.message);
+        transporter.isEmailAvailable = false;
     } else {
         console.log('✅ Email server is ready to send messages');
         console.log('✅ Connection pooling enabled');
+        transporter.isEmailAvailable = true;
     }
 });
 

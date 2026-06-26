@@ -12,6 +12,12 @@ export const sendWelcomeEmail = async (userEmail, userName) => {
     console.log('   To:', userEmail);
     console.log('   Name:', userName);
 
+    if (!transporter.isEmailAvailable) {
+        console.warn('   ⚠️ Skipping welcome email: SMTP server is offline or ports are blocked.');
+        console.log('===== EMAIL SEND SKIPPED =====\n');
+        return false;
+    }
+
     try {
         const mailOptions = {
             from: {
@@ -94,6 +100,12 @@ export const sendCollaborationInvitation = async ({ to, inviterName, workspaceNa
     console.log('   Role:', role);
     console.log('   Invitation URL:', invitationUrl);
     console.log('   Has Message:', !!message);
+
+    if (!transporter.isEmailAvailable) {
+        console.warn('   ⚠️ Skipping invitation email: SMTP server is offline or ports are blocked.');
+        console.log('===== EMAIL SEND SKIPPED =====\n');
+        throw new Error('SMTP server is unreachable or ports are blocked by hosting provider');
+    }
 
     const maxRetries = 3;
     let lastError = null;
