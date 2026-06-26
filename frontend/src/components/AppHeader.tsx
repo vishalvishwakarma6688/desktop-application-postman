@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2 } from 'lucide-react';
+import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2, X } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRequestStore } from '@/store/useRequestStore';
@@ -21,6 +21,7 @@ export default function AppHeader() {
     const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
     const [showEnvMenu, setShowEnvMenu] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showSignoutConfirm, setShowSignoutConfirm] = useState(false);
     const [showEnvPanel, setShowEnvPanel] = useState(false);
     const [showHistoryPanel, setShowHistoryPanel] = useState(false);
     const [showSettingsPanel, setShowSettingsPanel] = useState(false);
@@ -187,7 +188,7 @@ export default function AppHeader() {
                                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                             </div>
                             <button
-                                onClick={logout}
+                                onClick={() => { setShowSignoutConfirm(true); setShowUserMenu(false); }}
                                 className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-gray-800 transition-colors"
                             >
                                 <LogOut className="h-4 w-4" /> Sign out
@@ -216,6 +217,55 @@ export default function AppHeader() {
             )}
             {showCollaboratorsPanel && (
                 <CollaboratorsPanel onClose={() => setShowCollaboratorsPanel(false)} />
+            )}
+            {showSignoutConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSignoutConfirm(false)} />
+
+                    {/* Premium Modal Container */}
+                    <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-2xl transition-all duration-300">
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b border-gray-800 bg-gray-950 px-5 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded bg-red-500/10 text-red-400">
+                                    <LogOut className="h-4 w-4" />
+                                </div>
+                                <h2 className="text-sm font-semibold text-gray-200">Confirm Sign Out</h2>
+                            </div>
+                            <button
+                                onClick={() => setShowSignoutConfirm(false)}
+                                className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-4 text-left">
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                Are you sure you want to sign out of your DataCourier account? Any unsaved local workspace configurations might not be synchronized.
+                            </p>
+                            <div className="flex items-center justify-end gap-3 pt-2">
+                                <button
+                                    onClick={() => setShowSignoutConfirm(false)}
+                                    className="rounded-lg border border-gray-700 bg-transparent px-4 py-2 text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        setShowSignoutConfirm(false);
+                                    }}
+                                    className="rounded-lg bg-red-600 hover:bg-red-700 px-4 py-2 text-xs font-semibold text-white transition-all transform active:scale-95 shadow-md hover:shadow-red-500/15"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
