@@ -155,6 +155,7 @@ export interface ApiResponse<T = any> {
     data?: T;
     count?: number;
     total?: number;
+    message?: string;
     error?: {
         message: string;
         type: string;

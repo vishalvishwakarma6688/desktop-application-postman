@@ -1,8 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import passport from '../config/passport.js';
-import { register, login, getMe } from '../controllers/authController.js';
-import { registerValidation, loginValidation, validate } from '../utils/validators.js';
+import { register, login, getMe, forgotPassword, resetPassword } from '../controllers/authController.js';
+import { registerValidation, loginValidation, forgotPasswordValidation, resetPasswordValidation, validate } from '../utils/validators.js';
 import auth from '../middlewares/auth.js';
 
 const router = express.Router();
@@ -23,6 +23,8 @@ const oauthSuccess = (req, res) => {
 // Local auth
 router.post('/register', registerValidation, validate, register);
 router.post('/login', loginValidation, validate, login);
+router.post('/forgot-password', forgotPasswordValidation, validate, forgotPassword);
+router.post('/reset-password', resetPasswordValidation, validate, resetPassword);
 router.get('/me', auth, getMe);
 
 // Google OAuth

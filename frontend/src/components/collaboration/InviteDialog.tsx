@@ -79,66 +79,99 @@ export default function InviteDialog({ workspaceId, workspaceName, onClose }: In
 
     if (successData) {
         return (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-md shadow-2xl p-6 flex flex-col items-center text-center">
-                    <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
-                        <CheckCircle className="h-6 w-6" />
-                    </div>
-
-                    <h3 className="text-lg font-semibold text-gray-100 mb-1">Invitation Created!</h3>
-                    <p className="text-sm text-gray-400 mb-4">
-                        For user: <span className="text-orange-400 font-medium">{email}</span> as <span className="font-medium">{role}</span>
-                    </p>
-
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-gray-900/95 border border-gray-800/80 rounded-2xl w-full max-w-md shadow-2xl p-8 flex flex-col items-center text-center backdrop-blur-md transform transition-all duration-300 scale-100">
+                    
                     {successData.emailSent ? (
-                        <div className="rounded border border-emerald-900/50 bg-emerald-950/20 px-3 py-2 text-xs text-green-400 w-full text-left mb-4 flex items-start gap-2">
-                            <span className="shrink-0 font-bold">✓</span>
-                            <span>An invitation email has been sent successfully. You can also copy the link below.</span>
-                        </div>
+                        <>
+                            {/* Checkmark Animation Container */}
+                            <div className="h-16 w-16 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-5 animate-pulse">
+                                <CheckCircle className="h-8 w-8 stroke-[2.5]" />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-gray-100 mb-2">Invitation Sent!</h3>
+                            <p className="text-sm text-gray-400 leading-relaxed mb-6">
+                                We have sent an email invite to <span className="text-orange-400 font-semibold">{email}</span> as an <span className="font-semibold text-gray-300 capitalize">{role}</span>.
+                            </p>
+
+                            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-gray-800 to-transparent mb-6" />
+
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => {
+                                        setSuccessData(null);
+                                        setEmail('');
+                                        setMessage('');
+                                    }}
+                                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 hover:text-white border border-gray-800 hover:border-gray-700 bg-gray-900/50 hover:bg-gray-800/50 rounded-xl transition-all duration-200"
+                                >
+                                    Invite Another
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="flex-1 px-4 py-2.5 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all duration-200 shadow-lg shadow-orange-500/20 active:scale-[0.98]"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </>
                     ) : (
-                        <div className="rounded border border-amber-900/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-400 w-full text-left mb-4 flex items-start gap-2">
-                            <span className="shrink-0 font-bold">⚠️</span>
-                            <span>The invitation was created, but the email could not be sent. Please share the link manually.</span>
-                        </div>
+                        <>
+                            {/* Error Warning Container */}
+                            <div className="h-16 w-16 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-5">
+                                <Mail className="h-8 w-8 stroke-[2]" />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-gray-100 mb-2">Invitation Created</h3>
+                            <p className="text-sm text-gray-400 leading-relaxed mb-4">
+                                The invitation for <span className="text-orange-400 font-semibold">{email}</span> was created, but we couldn't send the email automatically.
+                            </p>
+
+                            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-300 w-full text-left mb-6 leading-relaxed">
+                                <span className="font-bold mr-1">⚠️ Note:</span> Please share the invitation link below with your collaborator manually.
+                            </div>
+
+                            <div className="w-full mb-6">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase text-left mb-2 tracking-wider">Invitation Link</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        readOnly
+                                        value={successData.invitationUrl}
+                                        className="flex-1 rounded-xl border border-gray-850 bg-gray-950 px-3.5 py-2.5 text-xs text-gray-300 font-mono focus:outline-none focus:border-gray-700"
+                                    />
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className="rounded-xl bg-orange-500 hover:bg-orange-600 px-4 py-2.5 text-xs font-semibold text-white transition-all duration-200 flex items-center gap-1.5 shrink-0 active:scale-[0.98]"
+                                    >
+                                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                        {copied ? 'Copied' : 'Copy'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-gray-800 to-transparent mb-6" />
+
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => {
+                                        setSuccessData(null);
+                                        setEmail('');
+                                        setMessage('');
+                                    }}
+                                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 hover:text-white border border-gray-800 hover:border-gray-700 bg-gray-900/50 hover:bg-gray-800/50 rounded-xl transition-all duration-200"
+                                >
+                                    Invite Another
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="flex-1 px-4 py-2.5 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all duration-200 shadow-lg shadow-orange-500/20 active:scale-[0.98]"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </>
                     )}
-
-                    <div className="w-full mb-6">
-                        <label className="block text-xs font-medium text-gray-500 uppercase text-left mb-1.5">Invitation Link</label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                readOnly
-                                value={successData.invitationUrl}
-                                className="flex-1 rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-gray-300 font-mono focus:outline-none"
-                            />
-                            <button
-                                onClick={handleCopyLink}
-                                className="rounded bg-orange-500 hover:bg-orange-600 px-4 py-2 text-xs font-semibold text-white transition-colors flex items-center gap-1.5 shrink-0"
-                            >
-                                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                                {copied ? 'Copied' : 'Copy'}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 w-full justify-end">
-                        <button
-                            onClick={() => {
-                                setSuccessData(null);
-                                setEmail('');
-                                setMessage('');
-                            }}
-                            className="px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded transition-colors"
-                        >
-                            Invite Another
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
-                        >
-                            Done
-                        </button>
-                    </div>
                 </div>
             </div>
         );

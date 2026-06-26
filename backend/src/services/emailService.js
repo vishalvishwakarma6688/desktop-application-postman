@@ -1,5 +1,6 @@
 import transporter from '../config/email.js';
 import { getWelcomeEmailTemplate } from '../templates/welcomeEmail.js';
+import { getResetPasswordEmailTemplate } from '../templates/resetPasswordEmail.js';
 import axios from 'axios';
 
 /**
@@ -269,4 +270,57 @@ export const sendCollaborationInvitation = async ({ to, inviterName, workspaceNa
     }
 
     throw lastError;
+};
+
+/**
+ * Send password reset email
+ * @param {string} email - Recipient email address
+ * @param {string} resetUrl - Password reset URL
+ * @returns {Promise<boolean>} - Returns true if email sent successfully
+ */
+export const sendResetPasswordEmail = async (email, resetUrl) => {
+    console.log('\n📧 ===== SENDING PASSWORD RESET EMAIL =====');
+    console.log('   To:', email);
+    console.log('   Reset URL:', resetUrl);
+
+    if (!transporter.isEmailAvailable) {
+        console.warn('   ⚠️ Skipping reset email: SMTP/Brevo is offline or ports are blocked.');
+        console.log('===== EMAIL SEND SKIPPED =====\n');
+        throw new Error('Email service is currently offline or unreachable.');
+    }
+
+    try {
+        const subject = 'Reset Your DataCourier Password';
+        const html = getResetPasswordEmailTemplate(resetUrl);
+
+        if (process.env.BREVO_API_KEY) {
+            await sendEmailViaBrevo({ to: email, subject, html });
+            console.log(`   ✅ SUCCESS! Password reset email sent to ${email} via Brevo`);
+            console.log('===== EMAIL SEND COMPLETE =====\n');
+            return true;
+        }
+
+        const mailOptions = {
+            from: {
+                name: 'DataCourier',
+                address: process.env.EMAIL_USER
+            },
+            to: email,
+            subject,
+            html
+        };
+
+        console.log('   📤 Attempting to send email via SMTP...');
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`   ✅ SUCCESS! Password reset email sent to ${email}`);
+        console.log('   Message ID:', info.messageId);
+        console.log('===== EMAIL SEND COMPLETE =====\n');
+        return true;
+    } catch (error) {
+        console.error('\n   ❌ ERROR SENDING PASSWORD RESET EMAIL');
+        console.error('   To:', email);
+        console.error('   Error Message:', error.message);
+        console.error('===== EMAIL SEND FAILED =====\n');
+        throw error;
+    }
 };

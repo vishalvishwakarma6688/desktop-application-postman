@@ -32,4 +32,14 @@ export const authApi = {
         const response = await api.get('/auth/me');
         return response.data;
     },
+
+    forgotPassword: async (email: string): Promise<ApiResponse<{ message: string }>> => {
+        const response = await api.post('/auth/forgot-password', { email });
+        return response.data;
+    },
+
+    resetPassword: async (data: { token: string; password?: string }): Promise<ApiResponse<{ message: string }>> => {
+        const response = await api.post('/auth/reset-password', data);
+        return response.data;
+    },
 };

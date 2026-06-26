@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import { sendWelcomeEmail } from '../services/emailService.js';
+import crypto from 'crypto';
+import { sendWelcomeEmail, sendResetPasswordEmail } from '../services/emailService.js';
 
 // Generate JWT token
 const generateToken = (userId, email) => {
@@ -132,6 +133,88 @@ export const getMe = async (req, res, next) => {
         res.status(200).json({
             success: true,
             data: user.toJSON()
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Request password reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            // Security best practice: don't reveal that the user does not exist
+            return res.status(200).json({
+                success: true,
+                message: 'If a matching account exists, a password reset link has been sent.'
+            });
+        }
+
+        // Only allow password resets for local accounts
+        if (user.provider !== 'local') {
+            const error = new Error('This account uses social login (Google/GitHub). Please log in using your social provider.');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+        await user.save({ validateBeforeSave: false });
+
+        // Construct reset URL
+        const webUrl = process.env.WEB_URL || 'https://postman-like-desktop-app.vercel.app';
+        const resetUrl = `${webUrl}/reset-password?token=${resetToken}`;
+
+        // Send email
+        await sendResetPasswordEmail(user.email, resetUrl);
+
+        res.status(200).json({
+            success: true,
+            message: 'If a matching account exists, a password reset link has been sent.'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Reset password
+// @route   POST /api/auth/reset-password
+// @access  Public
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { token, password } = req.body;
+
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            const error = new Error('Invalid or expired password reset token');
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        // Update password
+        user.password = password;
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password reset successful. You can now log in with your new password.'
         });
     } catch (error) {
         next(error);

@@ -15,6 +15,7 @@ import License from '@/pages/License';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import InviteOnboardingPage from '@/pages/InviteOnboardingPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
 
 function HomePage() {
     return (
@@ -45,6 +46,7 @@ export default function App() {
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/invite/:token" element={<InviteOnboardingPage />} />
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
                     </Routes>
                 </main>
                 <Footer />
