@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+// Test auto-bump trigger
 import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2, X } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
