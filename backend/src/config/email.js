@@ -59,10 +59,7 @@ const transporter = nodemailer.createTransport({
 // Verify transporter configuration on startup
 transporter.isEmailAvailable = false;
 
-if (process.env.RESEND_API_KEY) {
-    console.log('✅ Email service: Resend API is configured (RESEND_API_KEY)');
-    transporter.isEmailAvailable = true;
-} else if (process.env.BREVO_API_KEY) {
+if (process.env.BREVO_API_KEY) {
     console.log('✅ Email service: Brevo API is configured (BREVO_API_KEY)');
     transporter.isEmailAvailable = true;
 } else {
