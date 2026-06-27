@@ -13,8 +13,8 @@ permissions:
 jobs:
   bump:
     runs-on: ubuntu-latest
-    # Skip if the commit message contains [skip ci] or was made by release bot
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    # Skip if the commit was made by our release bot to prevent infinite loop
+    if: "github.event.head_commit.author.name != 'DataCourier Bot' && github.event.head_commit.committer.name != 'DataCourier Bot'"
 
     steps:
       - name: Checkout Code
@@ -30,8 +30,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "DataCourier Bot"
+          git config --global user.email "datacourier-bot@users.noreply.github.com"
 
       - name: Bump Version
         working-directory: frontend
@@ -43,7 +43,7 @@ jobs:
         run: |
           NEW_VERSION=$(node -p "require('./frontend/package.json').version")
           git add frontend/package.json
-          git commit -m "chore(release): bump version to v$NEW_VERSION [skip ci]"
+          git commit -m "chore(release): bump version to v$NEW_VERSION"
           git push origin master
 
       - name: Create & Push Tag
