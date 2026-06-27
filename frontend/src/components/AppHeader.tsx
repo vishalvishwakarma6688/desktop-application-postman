@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // Test auto-bump trigger v2
-import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2, X } from 'lucide-react';
+import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2, X, Info, CheckCircle2, AlertTriangle, XCircle, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRequestStore } from '@/store/useRequestStore';
+import { useNotificationStore } from '@/store/useNotificationStore';
 import { environmentApi } from '@/features/environments/api';
 import EnvironmentPanel from './EnvironmentPanel';
 import HistoryPanel from './HistoryPanel';
@@ -13,6 +14,16 @@ import GitSyncPanel from './GitSyncPanel';
 import LanShareModal from './LanShareModal';
 import CollaboratorsAvatars from './collaboration/CollaboratorsAvatars';
 import CollaboratorsPanel from './collaboration/CollaboratorsPanel';
+
+function formatTime(date: Date) {
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return new Date(date).toLocaleDateString();
+}
 
 export default function AppHeader() {
     const { user, logout } = useAuthStore();
@@ -29,6 +40,10 @@ export default function AppHeader() {
     const [showGitPanel, setShowGitPanel] = useState(false);
     const [showLanSharePanel, setShowLanSharePanel] = useState(false);
     const [showCollaboratorsPanel, setShowCollaboratorsPanel] = useState(false);
+    const [showNotificationMenu, setShowNotificationMenu] = useState(false);
+
+    const { notifications, markAsRead, markAllAsRead, clearNotification, clearAll } = useNotificationStore();
+    const unreadCount = notifications.filter(n => !n.read).length;
 
     const { data: envsData } = useQuery({
         queryKey: ['environments', currentWorkspace?._id],
@@ -163,9 +178,105 @@ export default function AppHeader() {
                 >
                     <History className="h-4 w-4" />
                 </button>
-                <button className="rounded p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors" title="Notifications">
-                    <Bell className="h-4 w-4" />
-                </button>
+                {/* Notifications dropdown trigger */}
+                <div className="relative">
+                    <button
+                        onClick={() => {
+                            setShowNotificationMenu(v => !v);
+                            setShowWorkspaceMenu(false);
+                            setShowEnvMenu(false);
+                            setShowUserMenu(false);
+                        }}
+                        className={`relative rounded p-1.5 transition-colors ${showNotificationMenu ? 'bg-gray-800 text-gray-200' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'}`}
+                        title="Notifications"
+                    >
+                        <Bell className="h-4 w-4" />
+                        {unreadCount > 0 && (
+                            <span className="absolute right-0.5 top-0.5 flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                        )}
+                    </button>
+                    {showNotificationMenu && (
+                        <div className="absolute right-0 top-full z-50 mt-1.5 w-80 rounded-xl border border-gray-850 bg-gray-900 shadow-2xl overflow-hidden">
+                            {/* Header */}
+                            <div className="flex items-center justify-between border-b border-gray-800 bg-gray-950 px-4 py-3">
+                                <span className="text-xs font-bold text-gray-200">Notifications</span>
+                                <div className="flex items-center gap-2">
+                                    {notifications.length > 0 && (
+                                        <>
+                                            <button
+                                                onClick={markAllAsRead}
+                                                className="text-[10px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+                                            >
+                                                Mark all as read
+                                            </button>
+                                            <span className="text-gray-700 text-xs">|</span>
+                                            <button
+                                                onClick={clearAll}
+                                                className="text-[10px] font-semibold text-gray-500 hover:text-gray-350 transition-colors"
+                                            >
+                                                Clear all
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Notifications list */}
+                            <div className="max-h-[300px] overflow-y-auto divide-y divide-gray-800/60">
+                                {notifications.length > 0 ? (
+                                    notifications.map((n) => {
+                                        let Icon = Info;
+                                        let iconColor = 'text-blue-400';
+                                        if (n.type === 'success') { Icon = CheckCircle2; iconColor = 'text-green-400'; }
+                                        else if (n.type === 'warning') { Icon = AlertTriangle; iconColor = 'text-yellow-500'; }
+                                        else if (n.type === 'error') { Icon = XCircle; iconColor = 'text-red-400'; }
+
+                                        return (
+                                            <div
+                                                key={n.id}
+                                                onClick={() => markAsRead(n.id)}
+                                                className={`group flex items-start gap-2.5 p-3 hover:bg-gray-850 cursor-pointer transition-colors ${!n.read ? 'bg-orange-500/[0.02]' : ''}`}
+                                            >
+                                                <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${iconColor}`} />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-1">
+                                                        <p className={`text-xs font-semibold truncate ${!n.read ? 'text-gray-150' : 'text-gray-400'}`}>
+                                                            {n.title}
+                                                        </p>
+                                                        {!n.read && (
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-400 leading-relaxed mt-0.5 break-words">
+                                                        {n.message}
+                                                    </p>
+                                                    <p className="text-[9px] text-gray-500 mt-1">
+                                                        {formatTime(n.timestamp)}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        clearNotification(n.id);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-800 hover:text-red-400 text-gray-500 transition-all"
+                                                >
+                                                    <Trash2 className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+                                        <Bell className="h-8 w-8 text-gray-700 mb-2" />
+                                        <p className="text-xs text-gray-400 font-medium">All caught up!</p>
+                                        <p className="text-[10px] text-gray-600 mt-0.5">No notifications at the moment</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Divider */}
                 <div className="h-4 w-px bg-gray-700 mx-1" />
@@ -200,8 +311,8 @@ export default function AppHeader() {
             </div>
 
             {/* Click outside to close menus */}
-            {(showWorkspaceMenu || showEnvMenu || showUserMenu) && (
-                <div className="fixed inset-0 z-40" onClick={() => { setShowWorkspaceMenu(false); setShowEnvMenu(false); setShowUserMenu(false); }} />
+            {(showWorkspaceMenu || showEnvMenu || showUserMenu || showNotificationMenu) && (
+                <div className="fixed inset-0 z-40" onClick={() => { setShowWorkspaceMenu(false); setShowEnvMenu(false); setShowUserMenu(false); setShowNotificationMenu(false); }} />
             )}
 
             {/* Environment Panel Modal */}

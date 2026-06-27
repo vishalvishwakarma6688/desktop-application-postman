@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import { useCollaborationStore, CollaboratorUser, CollaborationSession } from '@/store/useCollaborationStore';
 import { Operation } from './otClient';
+import { useNotificationStore } from '@/store/useNotificationStore';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
 
@@ -106,11 +107,23 @@ class CollaborationService {
         this.socket.on('user-joined-workspace', (data: CollaboratorUser) => {
             console.log('👤 User joined workspace:', data.userName);
             store.addUser(data);
+            useNotificationStore.getState().addNotification({
+                title: 'Collaborator Joined',
+                message: `${data.userName} has joined the workspace.`,
+                type: 'info'
+            });
         });
 
         this.socket.on('user-left-workspace', (data: { userId: string }) => {
             console.log('👋 User left workspace:', data.userId);
+            const user = store.activeUsers.get(data.userId);
+            const userName = user ? user.userName : 'A collaborator';
             store.removeUser(data.userId);
+            useNotificationStore.getState().addNotification({
+                title: 'Collaborator Left',
+                message: `${userName} has left the workspace.`,
+                type: 'info'
+            });
         });
 
         // Resource events
