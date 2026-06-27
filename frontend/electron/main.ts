@@ -25,6 +25,8 @@ autoUpdater.setFeedURL({
     owner: 'vishalvishwakarma6688',
     repo: 'desktop-application-postman',
 });
+// Force bypass of GitHub CDN cache to ensure we get live release metadata instantly
+autoUpdater.requestHeaders = { 'Cache-Control': 'no-cache' };
 
 let mainWindow: BrowserWindow | null = null;
 
