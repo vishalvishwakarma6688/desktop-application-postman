@@ -6,7 +6,7 @@ import { requestApi } from '@/features/requests/api';
 import { useTabStore } from '@/store/useTabStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { Collection, Request } from '@/types';
-import { ChevronRight, Folder, Plus, MoreVertical, Edit, Trash2, Check, X, Download, Play } from 'lucide-react';
+import { ChevronRight, Folder, Plus, MoreVertical, Edit, Trash2, Check, X, Download, Play, Loader2 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -22,10 +22,11 @@ interface Props {
     onOpenRequest: (r: Request) => void;
     getMethodColor: (m: string) => string;
     searchQuery?: string;
+    isCreatingRequest?: boolean;
 }
 
 export default function CollectionItem({
-    collection, isExpanded, onToggle, onNewRequest, onOpenRequest, getMethodColor, searchQuery,
+    collection, isExpanded, onToggle, onNewRequest, onOpenRequest, getMethodColor, searchQuery, isCreatingRequest = false,
 }: Props) {
     const queryClient = useQueryClient();
     const { activeTabId } = useTabStore();
@@ -161,25 +162,51 @@ export default function CollectionItem({
             {isExpanded && (
                 <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-700 pl-2">
                     {isLoading ? (
-                        <p className="px-2 py-2 text-xs text-gray-500">Loading...</p>
+                        <div className="space-y-1.5 py-1.5 animate-pulse">
+                            {[1, 2].map((n) => (
+                                <div key={n} className="flex items-center gap-2 px-2 py-1">
+                                    <div className="h-3 w-6 rounded bg-gray-700/60 shrink-0" />
+                                    <div className="h-3 flex-1 rounded bg-gray-700/60" />
+                                </div>
+                            ))}
+                        </div>
                     ) : filteredRequests.length > 0 ? (
-                        filteredRequests.map((request) => (
-                            <RequestItem
-                                key={request._id}
-                                request={request}
-                                collectionId={collection._id}
-                                onOpen={() => onOpenRequest(request)}
-                                onDelete={() => deleteRequestMutation.mutate(request._id)}
-                                getMethodColor={getMethodColor}
-                                isActive={request._id === activeTabId}
-                            />
-                        ))
+                        <>
+                            {filteredRequests.map((request) => (
+                                <RequestItem
+                                    key={request._id}
+                                    request={request}
+                                    collectionId={collection._id}
+                                    onOpen={() => onOpenRequest(request)}
+                                    onDelete={() => deleteRequestMutation.mutate(request._id)}
+                                    getMethodColor={getMethodColor}
+                                    isActive={request._id === activeTabId}
+                                />
+                            ))}
+                            {isCreatingRequest && (
+                                <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/40 border border-dashed border-gray-700/50 animate-pulse mt-0.5">
+                                    <span className="text-[9px] font-bold text-gray-500 uppercase shrink-0">GET</span>
+                                    <span className="text-xs text-gray-500 truncate font-medium">Creating request...</span>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="px-2 py-2 text-center">
                             <p className="text-xs text-gray-500 mb-1.5">{searchQuery ? 'No matching requests' : 'No requests yet'}</p>
                             {!searchQuery && (
-                                <button onClick={onNewRequest} className="text-xs text-orange-400 hover:text-orange-300 transition-colors">
-                                    + Add Request
+                                <button 
+                                    disabled={isCreatingRequest}
+                                    onClick={onNewRequest} 
+                                    className="text-xs text-orange-400 hover:text-orange-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1 mx-auto"
+                                >
+                                    {isCreatingRequest ? (
+                                        <>
+                                            <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                                            <span>Adding...</span>
+                                        </>
+                                    ) : (
+                                        '+ Add Request'
+                                    )}
                                 </button>
                             )}
                         </div>

@@ -5,12 +5,12 @@ export const aiApi = {
         status: number; statusText: string; data: any;
         headers: any; method: string; url: string;
     }) => {
-        const res = await api.post('/ai/explain-response', payload);
+        const res = await api.post('/ai/explain-response', payload, { timeout: 120000 });
         return res.data?.data?.text as string;
     },
 
     generateBody: async (payload: { method: string; url: string; description?: string }) => {
-        const res = await api.post('/ai/generate-body', payload);
+        const res = await api.post('/ai/generate-body', payload, { timeout: 120000 });
         return res.data?.data?.text as string;
     },
 
@@ -18,19 +18,19 @@ export const aiApi = {
         method: string; url: string; headers: any; body: any;
         errorResponse: any; errorStatus: number;
     }) => {
-        const res = await api.post('/ai/fix-request', payload);
+        const res = await api.post('/ai/fix-request', payload, { timeout: 120000 });
         return res.data?.data?.text as string;
     },
 
     generateTests: async (payload: {
         method: string; url: string; responseStatus: number; responseData: any;
     }) => {
-        const res = await api.post('/ai/generate-tests', payload);
+        const res = await api.post('/ai/generate-tests', payload, { timeout: 120000 });
         return res.data?.data?.text as string;
     },
 
     chat: async (message: string, context?: any) => {
-        const res = await api.post('/ai/chat', { message, context });
+        const res = await api.post('/ai/chat', { message, context }, { timeout: 120000 });
         return res.data?.data?.text as string;
     },
 };

@@ -7,7 +7,7 @@ import { requestApi } from '@/features/requests/api';
 import { workspaceApi } from '@/features/workspace/api';
 import { useTabStore } from '@/store/useTabStore';
 import { Collection, Request } from '@/types';
-import { Plus, Folder, Upload, Search, X, FileJson, Terminal, Network } from 'lucide-react';
+import { Plus, Folder, Upload, Search, X, FileJson, Terminal, Network, Loader2 } from 'lucide-react';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -35,7 +35,7 @@ export default function Sidebar() {
     const importInputRef = useRef<HTMLInputElement>(null);
     const importMenuRef = useRef<HTMLDivElement>(null);
 
-    const { data: collectionsData } = useQuery({
+    const { data: collectionsData, isLoading: isLoadingCollections } = useQuery({
         queryKey: ['collections', currentWorkspace?._id],
         queryFn: () => collectionApi.getByWorkspace(currentWorkspace!._id),
         enabled: !!currentWorkspace,
@@ -291,23 +291,44 @@ export default function Sidebar() {
                 </Select>
 
                 {showNewWorkspace ? (
-                    <div className="mt-2 space-y-2">
+                    <div className="mt-2 space-y-2 animate-fade-in">
                         <input
                             type="text" value={newWorkspaceName}
+                            disabled={createWorkspaceMutation.isPending}
                             onChange={(e) => setNewWorkspaceName(e.target.value)}
                             placeholder="Workspace name"
-                            className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1.5 text-sm focus:border-orange-500 focus:outline-none"
+                            className="w-full rounded-lg border border-gray-700 bg-gray-900 px-2.5 py-1.5 text-sm text-gray-205 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 transition-all disabled:opacity-50"
                             onKeyDown={(e) => e.key === 'Enter' && handleCreateWorkspace()}
                             autoFocus
                         />
                         <div className="flex gap-2">
-                            <button onClick={handleCreateWorkspace} className="flex-1 rounded bg-orange-500 px-2 py-1 text-xs font-medium hover:bg-orange-600 transition-colors">Create</button>
-                            <button onClick={() => { setShowNewWorkspace(false); setNewWorkspaceName(''); }} className="flex-1 rounded bg-gray-600 px-2 py-1 text-xs font-medium hover:bg-gray-500 transition-colors">Cancel</button>
+                            <button 
+                                onClick={handleCreateWorkspace} 
+                                disabled={createWorkspaceMutation.isPending || !newWorkspaceName.trim()}
+                                className="flex-1 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-1"
+                            >
+                                {createWorkspaceMutation.isPending ? (
+                                    <>
+                                        <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                                        <span>Creating...</span>
+                                    </>
+                                ) : (
+                                    'Create'
+                                )}
+                            </button>
+                            <button 
+                                onClick={() => { setShowNewWorkspace(false); setNewWorkspaceName(''); }} 
+                                disabled={createWorkspaceMutation.isPending}
+                                className="flex-1 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 disabled:opacity-50 px-3 py-1.5 text-xs font-semibold transition-all active:scale-[0.98]"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 ) : (
-                    <button onClick={() => setShowNewWorkspace(true)} className="mt-2 w-full rounded border border-dashed border-gray-600 px-2 py-1.5 text-xs text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors">
-                        + New Workspace
+                    <button onClick={() => setShowNewWorkspace(true)} className="mt-2 w-full rounded-lg border border-dashed border-gray-700 px-3 py-2 text-xs text-gray-400 hover:border-gray-650 hover:text-gray-300 hover:bg-gray-900/30 transition-all font-medium flex items-center justify-center gap-1">
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>New Workspace</span>
                     </button>
                 )}
             </div>
@@ -400,48 +421,82 @@ export default function Sidebar() {
                             )}
                         </div>
 
-                        {showNewCollection && (
-                            <div className="mb-3 space-y-2 rounded border border-gray-600 p-2">
-                                <input
-                                    type="text" value={newCollectionName}
-                                    onChange={(e) => setNewCollectionName(e.target.value)}
-                                    placeholder="Collection name"
-                                    className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1.5 text-sm focus:border-orange-500 focus:outline-none"
-                                    onKeyDown={(e) => e.key === 'Enter' && handleCreateCollection()}
-                                    autoFocus
-                                />
-                                <div className="flex gap-2">
-                                    <button onClick={handleCreateCollection} className="flex-1 rounded bg-orange-500 px-2 py-1 text-xs font-medium hover:bg-orange-600 transition-colors">Create</button>
-                                    <button onClick={() => { setShowNewCollection(false); setNewCollectionName(''); }} className="flex-1 rounded bg-gray-600 px-2 py-1 text-xs font-medium hover:bg-gray-500 transition-colors">Cancel</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {collectionsData?.data && collectionsData.data.length > 0 ? (
-                            <div className="space-y-1">
-                                {collectionsData.data
-                                    .filter((col: Collection) => !searchQuery || col.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                                    .map((collection: Collection) => (
-                                        <CollectionItem
-                                            key={collection._id}
-                                            collection={collection}
-                                            isExpanded={expandedCollections.has(collection._id) || (!!searchQuery && collection.name.toLowerCase().includes(searchQuery.toLowerCase()))}
-                                            onToggle={() => toggleCollection(collection._id)}
-                                            onNewRequest={() => handleNewRequest(collection._id)}
-                                            onOpenRequest={handleOpenRequest}
-                                            getMethodColor={getMethodColor}
-                                            searchQuery={searchQuery}
-                                        />
-                                    ))}
+                        {isLoadingCollections ? (
+                            <div className="space-y-3 py-4">
+                                {[1, 2, 3].map((n) => (
+                                    <div key={n} className="flex items-center gap-2.5 px-2 animate-pulse">
+                                        <div className="h-4 w-4 rounded bg-gray-700/60 shrink-0" />
+                                        <div className="h-4 flex-1 rounded bg-gray-700/60" />
+                                    </div>
+                                ))}
                             </div>
                         ) : (
-                            !showNewCollection && (
-                                <div className="text-center py-8">
-                                    <Folder className="h-12 w-12 mx-auto text-gray-600 mb-2" />
-                                    <p className="text-sm text-gray-500 mb-3">No collections yet</p>
-                                    <button onClick={() => setShowNewCollection(true)} className="text-xs text-orange-400 hover:text-orange-300 transition-colors">+ Create Collection</button>
-                                </div>
-                            )
+                            <>
+                                {showNewCollection && (
+                                    <div className="mb-3 space-y-2 rounded-lg border border-gray-700 bg-gray-900/30 p-2.5 animate-fade-in">
+                                        <input
+                                            type="text" value={newCollectionName}
+                                            disabled={createCollectionMutation.isPending}
+                                            onChange={(e) => setNewCollectionName(e.target.value)}
+                                            placeholder="Collection name"
+                                            className="w-full rounded-lg border border-gray-700 bg-gray-900 px-2.5 py-1.5 text-sm text-gray-205 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 transition-all disabled:opacity-50"
+                                            onKeyDown={(e) => e.key === 'Enter' && handleCreateCollection()}
+                                            autoFocus
+                                        />
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={handleCreateCollection} 
+                                                disabled={createCollectionMutation.isPending || !newCollectionName.trim()}
+                                                className="flex-1 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 text-xs font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-1"
+                                            >
+                                                {createCollectionMutation.isPending ? (
+                                                    <>
+                                                        <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                                                        <span>Creating...</span>
+                                                    </>
+                                                ) : (
+                                                    'Create'
+                                                )}
+                                            </button>
+                                            <button 
+                                                onClick={() => { setShowNewCollection(false); setNewCollectionName(''); }} 
+                                                disabled={createCollectionMutation.isPending}
+                                                className="flex-1 rounded-lg bg-gray-700 hover:bg-gray-650 text-gray-300 disabled:opacity-50 px-3 py-1.5 text-xs font-semibold transition-all active:scale-[0.98]"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {collectionsData?.data && collectionsData.data.length > 0 ? (
+                                    <div className="space-y-1">
+                                        {collectionsData.data
+                                            .filter((col: Collection) => !searchQuery || col.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                            .map((collection: Collection) => (
+                                                <CollectionItem
+                                                    key={collection._id}
+                                                    collection={collection}
+                                                    isExpanded={expandedCollections.has(collection._id) || (!!searchQuery && collection.name.toLowerCase().includes(searchQuery.toLowerCase()))}
+                                                    onToggle={() => toggleCollection(collection._id)}
+                                                    onNewRequest={() => handleNewRequest(collection._id)}
+                                                    onOpenRequest={handleOpenRequest}
+                                                    getMethodColor={getMethodColor}
+                                                    searchQuery={searchQuery}
+                                                    isCreatingRequest={createRequestMutation.isPending && createRequestMutation.variables?.collection === collection._id}
+                                                />
+                                            ))}
+                                    </div>
+                                ) : (
+                                    !showNewCollection && (
+                                        <div className="text-center py-8">
+                                            <Folder className="h-12 w-12 mx-auto text-gray-600 mb-2" />
+                                            <p className="text-sm text-gray-500 mb-3">No collections yet</p>
+                                            <button onClick={() => setShowNewCollection(true)} className="text-xs text-orange-400 hover:text-orange-300 transition-colors font-semibold hover:underline">+ Create Collection</button>
+                                        </div>
+                                    )
+                                )}
+                            </>
                         )}
                     </div>
                 ) : (

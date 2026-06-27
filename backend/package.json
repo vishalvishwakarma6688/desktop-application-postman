@@ -12,7 +12,8 @@
     "test:invitation": "node test-invitation-email.js",
     "diagnose:email": "node diagnose-email.js",
     "db:clear": "node clear-database.js",
-    "db:clear:force": "node clear-database-force.js"
+    "db:clear:force": "node clear-database-force.js",
+    "test:ai": "node test-ai.js"
   },
   "keywords": [
     "api",
