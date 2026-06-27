@@ -13,7 +13,8 @@
     "diagnose:email": "node diagnose-email.js",
     "db:clear": "node clear-database.js",
     "db:clear:force": "node clear-database-force.js",
-    "test:ai": "node test-ai.js"
+    "test:ai": "node test-ai.js",
+    "diagnose:updater": "node diagnose-updater.js"
   },
   "keywords": [
     "api",
