@@ -219,6 +219,7 @@ app.on('second-instance', (_event, commandLine) => {
     const url = commandLine.find(arg => arg.startsWith('postmanlike://'));
     if (url) handleOAuthCallback(url);
     if (mainWindow) {
+        if (!mainWindow.isVisible()) mainWindow.show();
         if (mainWindow.isMinimized()) mainWindow.restore();
         mainWindow.focus();
     }
