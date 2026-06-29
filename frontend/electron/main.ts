@@ -139,14 +139,6 @@ const createWindow = () => {
         }
     });
 
-    // Close to tray override
-    mainWindow.on('close', (event) => {
-        if (!(app as any).isQuitting) {
-            event.preventDefault();
-            mainWindow?.hide();
-        }
-    });
-
     mainWindow.on('closed', () => { mainWindow = null; });
 };
 
