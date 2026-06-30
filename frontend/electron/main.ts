@@ -16,6 +16,15 @@ const __dirname = path.dirname(__filename);
 
 Menu.setApplicationMenu(null);
 
+// Disable GPU hardware acceleration to resolve graphics card flickering issues on Windows
+app.disableHardwareAcceleration();
+
+// Disable Chromium sandboxing fallback on Linux to bypass SUID helper permission errors on modern kernels
+if (process.platform === 'linux') {
+    app.commandLine.appendSwitch('no-sandbox');
+    app.commandLine.appendSwitch('disable-setuid-sandbox');
+}
+
 // Configure auto-updater to use GitHub releases
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = false;
