@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRequestStore } from '@/store/useRequestStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
+import { useGitBranchStore } from '@/store/useGitBranchStore';
 import { environmentApi } from '@/features/environments/api';
 import EnvironmentPanel from './EnvironmentPanel';
 import HistoryPanel from './HistoryPanel';
@@ -14,6 +15,8 @@ import GitSyncPanel from './GitSyncPanel';
 import LanShareModal from './LanShareModal';
 import CollaboratorsAvatars from './collaboration/CollaboratorsAvatars';
 import CollaboratorsPanel from './collaboration/CollaboratorsPanel';
+import LanPeersIndicator from './p2p/LanPeersIndicator';
+import toast from 'react-hot-toast';
 
 function formatTime(date: Date) {
     const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -29,9 +32,11 @@ export default function AppHeader() {
     const { user, logout } = useAuthStore();
     const { currentWorkspace, workspaces, setCurrentWorkspace } = useWorkspaceStore();
     const { activeEnvironment, setActiveEnvironment } = useRequestStore();
+    const { activeBranch, branchMappings, setBranchMapping, removeBranchMapping } = useGitBranchStore();
 
     const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
     const [showEnvMenu, setShowEnvMenu] = useState(false);
+    const [showBranchMenu, setShowBranchMenu] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showSignoutConfirm, setShowSignoutConfirm] = useState(false);
     const [showEnvPanel, setShowEnvPanel] = useState(false);
@@ -139,12 +144,91 @@ export default function AppHeader() {
                     </div>
                 )}
             </div>
+            {/* Git Branch Indicator */}
+            {currentWorkspace?.localDirectory && (
+                <>
+                    <div className="h-4 w-px bg-gray-700 mx-1" />
+                    <div className="relative">
+                        <button
+                            onClick={() => { setShowBranchMenu(v => !v); setShowEnvMenu(false); setShowWorkspaceMenu(false); setShowUserMenu(false); }}
+                            className={`flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-semibold border transition-all ${
+                                activeBranch && branchMappings[activeBranch] 
+                                    ? 'text-orange-400 bg-orange-500/5 border-orange-500/10 hover:bg-orange-500/10' 
+                                    : 'text-gray-400 border-transparent hover:bg-gray-800 hover:text-gray-200'
+                            }`}
+                            title={activeBranch ? `Active Git Branch: ${activeBranch}` : 'Git repository inactive'}
+                        >
+                            <GitBranch className="h-3.5 w-3.5" />
+                            <span className="max-w-[100px] truncate">{activeBranch || 'Git Inactive'}</span>
+                            {activeBranch ? (
+                                branchMappings[activeBranch] ? (
+                                    <span className="text-[9px] text-orange-500/80 px-1 py-0.2 rounded bg-orange-500/10 border border-orange-500/20 font-bold uppercase tracking-wider scale-95 shrink-0">Linked</span>
+                                ) : (
+                                    <ChevronDown className="h-3.5 w-3.5 text-gray-600" />
+                                )
+                            ) : null}
+                        </button>
+
+                        {showBranchMenu && (
+                            <div className="absolute left-0 top-full z-50 mt-1 w-60 rounded-lg border border-gray-750 bg-gray-900 p-3 shadow-xl space-y-3">
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-0.5">Active Git Branch</div>
+                                    <div className="text-xs font-mono text-gray-205 font-bold truncate">{activeBranch || 'Not a Git Repository'}</div>
+                                </div>
+
+                                {activeBranch ? (
+                                    <div className="border-t border-gray-800 pt-2.5 space-y-1.5">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500">Auto-Switch Target</label>
+                                        <select
+                                            value={branchMappings[activeBranch] || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val) {
+                                                    setBranchMapping(activeBranch, val);
+                                                    const env = environments.find(envObj => envObj._id === val);
+                                                    if (env) {
+                                                        setActiveEnvironment(env);
+                                                        toast.success(`Linked branch '${activeBranch}' to environment '${env.name}'.`);
+                                                    }
+                                                } else {
+                                                    removeBranchMapping(activeBranch);
+                                                    toast.success(`Removed link for branch '${activeBranch}'.`);
+                                                }
+                                                setShowBranchMenu(false);
+                                            }}
+                                            className="w-full rounded border border-gray-750 bg-gray-850 px-2 py-1.5 text-xs text-gray-200 focus:border-orange-500 focus:outline-none"
+                                        >
+                                            <option value="">None (Don't auto-switch)</option>
+                                            {environments.map(env => (
+                                                <option key={env._id} value={env._id}>
+                                                    {env.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div className="border-t border-gray-800 pt-2 text-[10px] text-gray-400">
+                                        Open the Git Sync panel (click the Git icon on the right side of the header) and click **"Initialize Git"** to activate branch sync.
+                                    </div>
+                                )}
+
+                                <div className="text-[9px] text-gray-550 leading-relaxed bg-gray-950/20 p-2 rounded border border-gray-850">
+                                    APIFlow watches your local Git directory and switches environment credentials automatically when you checkout a branch.
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
 
             {/* Spacer */}
             <div className="flex-1" />
 
             {/* Right side actions */}
             <div className="flex items-center gap-1">
+                {/* Lan Peers */}
+                <LanPeersIndicator />
+
                 {/* Collaborators */}
                 <CollaboratorsAvatars onOpenPanel={() => setShowCollaboratorsPanel(true)} />
 

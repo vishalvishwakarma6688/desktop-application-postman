@@ -2,6 +2,9 @@ import { ipcMain, dialog, app, safeStorage } from 'electron';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { startLanServer, stopLanServer } from '../lanServer.js';
+import { startP2P, stopP2P, sendP2PInvite } from '../p2pManager.js';
+import { startStressTest, stopStressTest } from '../stressManager.js';
+import { startGitBranchWatcher, stopGitBranchWatcher } from '../gitWatcher.js';
 
 const execAsync = promisify(exec);
 import { registerMonitors, triggerImmediateSweep, MonitoredRequest } from '../healthMonitor.js';
@@ -134,7 +137,7 @@ export const setupIpcHandlers = () => {
     });
 
     // Git command runner handler
-    ipcMain.handle('git:run', async (_, { dirPath, args }) => {
+    ipcMain.handle('git:run', async (event, { dirPath, args }) => {
         try {
             // Basic args validation to avoid arbitrary shell command injection beyond git
             const cleanArgs = args.filter((arg: string) => typeof arg === 'string');
@@ -144,6 +147,17 @@ export const setupIpcHandlers = () => {
 
             console.log(`[GIT EXEC] Running inside ${dirPath}: ${command}`);
             const { stdout, stderr } = await execAsync(command, { cwd: dirPath });
+
+            // If git init was run, start the watcher automatically
+            if (cleanArgs.includes('init')) {
+                const webContents = event.sender;
+                startGitBranchWatcher(dirPath, (branchName) => {
+                    if (!webContents.isDestroyed()) {
+                        webContents.send('git:branch-changed', branchName);
+                    }
+                }).catch(console.error);
+            }
+
             return { success: true, stdout, stderr };
         } catch (err: any) {
             return { success: false, error: err.message, stderr: err.stderr, stdout: err.stdout };
@@ -245,6 +259,123 @@ export const setupIpcHandlers = () => {
             return { success: true };
         } catch (err: any) {
             console.error('[HEALTH MON] Sweep failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // P2P Auto-Discovery Handlers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Start P2P discovery
+    ipcMain.handle('p2p:start', async (event, { userId, username }) => {
+        try {
+            const webContents = event.sender;
+            startP2P(
+                userId,
+                username,
+                (peers) => {
+                    if (!webContents.isDestroyed()) {
+                        webContents.send('p2p:peers-updated', peers);
+                    }
+                },
+                (inviteData) => {
+                    if (!webContents.isDestroyed()) {
+                        webContents.send('p2p:share-prompt', inviteData);
+                    }
+                }
+            );
+            return { success: true };
+        } catch (err: any) {
+            console.error('[P2P] Start failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // Stop P2P discovery
+    ipcMain.handle('p2p:stop', async () => {
+        try {
+            stopP2P();
+            return { success: true };
+        } catch (err: any) {
+            console.error('[P2P] Stop failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // Send a sharing invitation to a target peer's IP
+    ipcMain.handle('p2p:send-invite', async (_, { targetIp, inviteData }) => {
+        try {
+            sendP2PInvite(targetIp, inviteData);
+            return { success: true };
+        } catch (err: any) {
+            console.error('[P2P] Send invite failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Local API Stress Tester Handlers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Start local API stress test
+    ipcMain.handle('stress:start', async (event, { params }) => {
+        try {
+            const webContents = event.sender;
+            startStressTest(
+                params,
+                (tickData) => {
+                    if (!webContents.isDestroyed()) {
+                        webContents.send('stress:metrics-tick', tickData);
+                    }
+                },
+                (completeData) => {
+                    if (!webContents.isDestroyed()) {
+                        webContents.send('stress:complete', completeData);
+                    }
+                }
+            );
+            return { success: true };
+        } catch (err: any) {
+            console.error('[STRESS] Start failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // Stop local API stress test
+    ipcMain.handle('stress:stop', async () => {
+        try {
+            stopStressTest();
+            return { success: true };
+        } catch (err: any) {
+            console.error('[STRESS] Stop failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // Start watching active git branch
+    ipcMain.handle('git:watch-branch', async (event, { dirPath }) => {
+        try {
+            const webContents = event.sender;
+            await startGitBranchWatcher(dirPath, (branchName) => {
+                if (!webContents.isDestroyed()) {
+                    webContents.send('git:branch-changed', branchName);
+                }
+            });
+            return { success: true };
+        } catch (err: any) {
+            console.error('[GIT WATCHER] Start failed:', err.message);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // Stop watching active git branch
+    ipcMain.handle('git:unwatch-branch', async () => {
+        try {
+            stopGitBranchWatcher();
+            return { success: true };
+        } catch (err: any) {
+            console.error('[GIT WATCHER] Stop failed:', err.message);
             return { success: false, error: err.message };
         }
     });

@@ -87,7 +87,14 @@ export default function CollectionItem({
 
     return (
         <div className="rounded">
-            <div className="group flex items-center justify-between rounded px-2 py-1.5 hover:bg-gray-700 transition-colors">
+            <div
+                draggable={true}
+                onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', collection._id);
+                    e.dataTransfer.effectAllowed = 'copy';
+                }}
+                className="group flex items-center justify-between rounded px-2 py-1.5 hover:bg-gray-700 cursor-grab active:cursor-grabbing transition-colors"
+            >
                 {renaming ? (
                     <div className="flex flex-1 items-center gap-1 min-w-0">
                         <input

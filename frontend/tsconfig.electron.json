@@ -15,5 +15,5 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["electron/main.ts", "electron/ipc/**/*"]
+  "include": ["electron/**/*.ts"]
 }

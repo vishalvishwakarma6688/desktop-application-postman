@@ -1,5 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/useAuthStore';
 import InviteAcceptPage from './pages/InviteAcceptPage';
@@ -12,17 +11,18 @@ import { useTabStore } from './store/useTabStore';
 import { requestApi } from './features/requests/api';
 import { authApi } from './features/auth/api';
 import { useCollaboration } from './hooks/useCollaboration';
+import { useP2PStore } from './store/useP2PStore';
+import IncomingShareDialog from './components/p2p/IncomingShareDialog';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useWorkspaceStore } from './store/useWorkspaceStore';
+import { useRequestStore } from './store/useRequestStore';
+import { useGitBranchStore } from './store/useGitBranchStore';
+import { environmentApi } from './features/environments/api';
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            refetchOnWindowFocus: false,
-            retry: 1,
-        },
-    },
-});
+
 
 function App() {
+    const queryClient = useQueryClient();
     const { isAuthenticated, token, setAuth, logout, isLoading, setLoading } = useAuthStore();
     const { tabs, activeTabId, updateTab } = useTabStore();
     const [pathname, setPathname] = useState(window.location.pathname);
@@ -30,6 +30,101 @@ function App() {
 
     // Initialize collaboration (connects to WebSocket when authenticated)
     useCollaboration();
+
+    const { user } = useAuthStore();
+    const { setPeers, setIncomingShare, reset: resetP2P } = useP2PStore();
+
+    // Initialize Local P2P Auto-Discovery
+    useEffect(() => {
+        if (!isAuthenticated || !user || !window.electronAPI) return;
+
+        // Start discovery in Main process
+        window.electronAPI.invoke('p2p:start', {
+            userId: user._id,
+            username: user.name
+        }).catch(console.error);
+
+        // Register P2P listeners
+        window.electronAPI.receive('p2p:peers-updated', (peers: any) => {
+            setPeers(peers);
+        });
+
+        window.electronAPI.receive('p2p:share-prompt', (inviteData: any) => {
+            setIncomingShare(inviteData);
+        });
+
+        return () => {
+            // Clean up: stop P2P discovery
+            window.electronAPI.invoke('p2p:stop').catch(console.error);
+            resetP2P();
+        };
+    }, [isAuthenticated, user]);
+
+    const { currentWorkspace } = useWorkspaceStore();
+    const { setActiveEnvironment } = useRequestStore();
+    const { setActiveBranch, setBranchMapping, loadMappings, reset: resetGitBranch } = useGitBranchStore();
+
+    // Fetch environments for matching fallback
+    const { data: envsData } = useQuery({
+        queryKey: ['environments', currentWorkspace?._id],
+        queryFn: () => environmentApi.getByWorkspace(currentWorkspace!._id),
+        enabled: !!currentWorkspace && !!window.electronAPI,
+    });
+    const environments = envsData?.data || [];
+
+    const envsRef = useRef({ environments, setActiveEnvironment, setBranchMapping, setActiveBranch });
+    useEffect(() => {
+        envsRef.current = { environments, setActiveEnvironment, setBranchMapping, setActiveBranch };
+    }, [environments, setActiveEnvironment, setBranchMapping, setActiveBranch]);
+
+    // Watch git branch when workspace changes
+    useEffect(() => {
+        if (!isAuthenticated || !currentWorkspace || !window.electronAPI) return;
+
+        // 1. Load mappings for this workspace
+        loadMappings(currentWorkspace._id);
+
+        // 2. Start branch watcher
+        if (currentWorkspace.localDirectory) {
+            window.electronAPI.invoke('git:watch-branch', { dirPath: currentWorkspace.localDirectory }).catch(console.error);
+        } else {
+            window.electronAPI.invoke('git:unwatch-branch').catch(console.error);
+        }
+
+        // 3. Register branch changed event
+        window.electronAPI.receive('git:branch-changed', (branchName: string) => {
+            const currentMappings = useGitBranchStore.getState().branchMappings;
+            const mappedEnvId = currentMappings[branchName];
+            const { environments: latestEnvs, setActiveEnvironment: setEnv, setBranchMapping: setMap, setActiveBranch: setBranch } = envsRef.current;
+
+            setBranch(branchName);
+
+            if (mappedEnvId) {
+                // If there is an explicit mapping, find and switch
+                const targetEnv = latestEnvs.find((e: any) => e._id === mappedEnvId);
+                if (targetEnv) {
+                    setEnv(targetEnv);
+                    toast.success(`Git Branch switched to '${branchName}'. Switched environment to '${targetEnv.name}'.`);
+                }
+            } else {
+                // Name-based match fallback
+                const targetEnv = latestEnvs.find((e: any) => e.name.toLowerCase() === branchName.toLowerCase());
+                if (targetEnv) {
+                    setEnv(targetEnv);
+                    setMap(branchName, targetEnv._id);
+                    toast.success(`Git Branch switched to '${branchName}'. Auto-linked environment '${targetEnv.name}'.`);
+                }
+            }
+        });
+
+        return () => {
+            if (window.electronAPI) {
+                window.electronAPI.invoke('git:unwatch-branch').catch(console.error);
+                window.electronAPI.removeListener('git:branch-changed');
+            }
+            resetGitBranch();
+        };
+    }, [isAuthenticated, currentWorkspace?._id, currentWorkspace?.localDirectory, loadMappings, resetGitBranch]);
 
     // Fetch user data on app initialization if token exists but user object is missing
     useEffect(() => {
@@ -147,30 +242,29 @@ function App() {
     }
 
     return (
-        <QueryClientProvider client={queryClient}>
-            <div className="h-screen w-screen overflow-hidden bg-gray-900 text-gray-100">
-                {pathname === '/oauth-callback'
-                    ? <OAuthCallbackPage />
-                    : pathname.startsWith('/invite/')
-                        ? <InviteAcceptPage token={pathname.split('/invite/')[1]} />
-                        : isAuthenticated ? <DashboardPage /> : <LoginPage />
-                }
-                {showPalette && isAuthenticated && <CommandPalette onClose={() => setShowPalette(false)} />}
-                {/* Update notification popup — shown when a new version is available */}
-                <UpdateNotification />
-                <Toaster
-                    position="bottom-center"
-                    toastOptions={{
-                        style: {
-                            background: '#1f2937',
-                            color: '#f3f4f6',
-                            border: '1px solid #374151',
-                            fontSize: '13px',
-                        },
-                    }}
-                />
-            </div>
-        </QueryClientProvider>
+        <div className="h-screen w-screen overflow-hidden bg-gray-900 text-gray-100">
+            {pathname === '/oauth-callback'
+                ? <OAuthCallbackPage />
+                : pathname.startsWith('/invite/')
+                    ? <InviteAcceptPage token={pathname.split('/invite/')[1]} />
+                    : isAuthenticated ? <DashboardPage /> : <LoginPage />
+            }
+            {showPalette && isAuthenticated && <CommandPalette onClose={() => setShowPalette(false)} />}
+            {/* Update notification popup — shown when a new version is available */}
+            <UpdateNotification />
+            <IncomingShareDialog />
+            <Toaster
+                position="bottom-center"
+                toastOptions={{
+                    style: {
+                        background: '#1f2937',
+                        color: '#f3f4f6',
+                        border: '1px solid #374151',
+                        fontSize: '13px',
+                    },
+                }}
+            />
+        </div>
     );
 }
 

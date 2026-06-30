@@ -28,6 +28,7 @@ export default function GitSyncPanel({ onClose }: Props) {
     const [modifiedFiles, setModifiedFiles] = useState<string[]>([]);
     const [commitMessage, setCommitMessage] = useState('');
     const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
+    const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
 
     const addLog = (text: string) => {
         setConsoleLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${text}`]);
@@ -124,7 +125,6 @@ export default function GitSyncPanel({ onClose }: Props) {
     };
 
     const handleUnlinkDirectory = async () => {
-        if (!confirm('Are you sure you want to unlink this local directory? Files will remain on disk but will no longer sync.')) return;
         setLoading(true);
         try {
             const updateRes = await workspaceApi.update(currentWorkspace!._id, { localDirectory: null });
@@ -141,6 +141,7 @@ export default function GitSyncPanel({ onClose }: Props) {
             toast.error('Failed to unlink directory');
         } finally {
             setLoading(false);
+            setShowUnlinkConfirm(false);
         }
     };
 
@@ -576,7 +577,7 @@ export default function GitSyncPanel({ onClose }: Props) {
                             <div className="mt-auto border-t border-gray-850 pt-3 flex justify-between items-center text-xs">
                                 <span className="text-gray-500">Unlink local syncing</span>
                                 <button
-                                    onClick={handleUnlinkDirectory}
+                                    onClick={() => setShowUnlinkConfirm(true)}
                                     className="text-red-400 hover:text-red-300 flex items-center gap-1 font-semibold"
                                 >
                                     <LogOut className="h-3 w-3" /> Unlink
@@ -709,7 +710,56 @@ export default function GitSyncPanel({ onClose }: Props) {
                             </div>
                         </div>
                     </div>
+            </div>
+
+            {/* Unlink Confirmation Dialog */}
+            {showUnlinkConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowUnlinkConfirm(false)} />
+
+                    {/* Premium Modal Container */}
+                    <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-2xl transition-all duration-300">
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b border-gray-800 bg-gray-950 px-5 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded bg-red-500/10 text-red-400">
+                                    <LogOut className="h-4 w-4" />
+                                </div>
+                                <h2 className="text-sm font-semibold text-gray-200">Unlink Workspace Folder</h2>
+                            </div>
+                            <button
+                                onClick={() => setShowUnlinkConfirm(false)}
+                                className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-4 text-left">
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                Are you sure you want to unlink this local directory? Workspace files will remain on your local disk, but automatic synchronization and Git branch triggers will stop.
+                            </p>
+                            <div className="flex items-center justify-end gap-3 pt-2">
+                                <button
+                                    onClick={() => setShowUnlinkConfirm(false)}
+                                    className="rounded-lg border border-gray-700 bg-transparent px-4 py-2 text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUnlinkDirectory}
+                                    disabled={loading}
+                                    className="rounded-lg bg-red-500 px-4 py-2 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {loading ? 'Unlinking...' : 'Unlink Directory'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            )}
             </div>
         </div>
     );

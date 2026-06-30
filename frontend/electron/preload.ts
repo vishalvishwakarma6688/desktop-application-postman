@@ -10,6 +10,11 @@ const RECEIVE_CHANNELS = [
     'updater:download-progress',
     'updater:update-downloaded',
     'health:status-change',
+    'p2p:peers-updated',
+    'p2p:share-prompt',
+    'stress:metrics-tick',
+    'stress:complete',
+    'git:branch-changed',
 ] as const;
 
 const INVOKE_CHANNELS = [
@@ -26,6 +31,13 @@ const INVOKE_CHANNELS = [
     'lan:stop',
     'health:register',
     'health:run-sweep',
+    'p2p:start',
+    'p2p:stop',
+    'p2p:send-invite',
+    'stress:start',
+    'stress:stop',
+    'git:watch-branch',
+    'git:unwatch-branch',
 ] as const;
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -37,6 +49,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     receive: (channel: string, func: (...args: unknown[]) => void) => {
         if ((RECEIVE_CHANNELS as readonly string[]).includes(channel)) {
             ipcRenderer.on(channel, (_event, ...args) => func(...args));
+        }
+    },
+    removeListener: (channel: string) => {
+        if ((RECEIVE_CHANNELS as readonly string[]).includes(channel)) {
+            ipcRenderer.removeAllListeners(channel);
         }
     },
     invoke: (channel: string, ...args: unknown[]) => {

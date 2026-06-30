@@ -14,6 +14,7 @@ import AuthEditor from './request/AuthEditor';
 import ResponsePanel from './request/ResponsePanel';
 import ScriptEditor from './request/ScriptEditor';
 import RequestMonitorSettings from './RequestMonitorSettings';
+import StressTestTab from './request/StressTestTab';
 import RightSidebar from './RightSidebar';
 import { parseCurl, isCurlCommand } from '@/utils/curlParser';
 import { triggerLocalSync } from '@/utils/localSync';
@@ -32,7 +33,7 @@ export default function RequestEditor() {
     const activeTab = tabs.find(t => t.id === activeTabId);
     const activeRequest = activeTab?.request;
 
-    const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor'>('params');
+    const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor' | 'stress'>('params');
     const [response, setResponse] = useState<any>(null);
     const [testResults, setTestResults] = useState<{ name: string; passed: boolean; error?: string }[]>([]);
     const [isCancelled, setIsCancelled] = useState(false);
@@ -474,7 +475,7 @@ export default function RequestEditor() {
                     {/* Tab nav */}
                     <div className="border-b border-gray-800 shrink-0">
                         <div className="flex gap-1 px-6">
-                            {(['params', 'headers', 'body', 'auth', 'scripts', 'monitor'] as const).map((tab) => {
+                            {(['params', 'headers', 'body', 'auth', 'scripts', 'monitor', 'stress'] as const).map((tab) => {
                                 const badge = tab === 'params'
                                     ? (activeRequest.queryParams?.filter(p => p.key).length || null)
                                     : tab === 'headers'
@@ -486,7 +487,7 @@ export default function RequestEditor() {
                                     <button key={tab} onClick={() => setCurrentTab(tab)}
                                         className={`relative px-3 py-2.5 text-sm font-medium capitalize transition-colors ${currentTab === tab ? 'text-orange-500' : 'text-gray-400 hover:text-gray-300'}`}
                                     >
-                                        {tab === 'monitor' ? 'Health Monitor' : tab}
+                                        {tab === 'monitor' ? 'Health Monitor' : tab === 'stress' ? 'Stress Test' : tab}
                                         {badge ? <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${tab === 'monitor' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>{badge}</span> : null}
                                         {currentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />}
                                     </button>
@@ -495,12 +496,17 @@ export default function RequestEditor() {
                         </div>
                     </div>
 
-                    {/* Resizable split — hidden when monitor tab is active */}
+                    {/* Resizable split — hidden when monitor or stress tab is active */}
                     <div ref={containerRef} className="flex flex-1 flex-col overflow-hidden">
                         {currentTab === 'monitor' ? (
                             /* ── Full-height monitor panel ── */
                             <div className="flex-1 overflow-auto p-5">
                                 <RequestMonitorSettings request={activeRequest} onUpdate={(updates) => patch(updates)} />
+                            </div>
+                        ) : currentTab === 'stress' ? (
+                            /* ── Full-height stress test panel ── */
+                            <div className="flex-1 overflow-auto">
+                                <StressTestTab request={activeRequest} />
                             </div>
                         ) : (
                             <>
