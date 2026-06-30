@@ -8,6 +8,7 @@ export interface Tab {
     request?: Request;
     unsavedRequest?: Partial<Request>;
     isDirty?: boolean;
+    response?: any;
 }
 
 interface TabState {

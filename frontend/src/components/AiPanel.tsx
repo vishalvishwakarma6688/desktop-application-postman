@@ -47,12 +47,12 @@ function MarkdownText({ text }: { text: string }) {
 
 function formatInline(text: string) {
     return text
-        .replace(/`([^`]+)`/g, '<code class="bg-gray-700 px-1 rounded text-orange-300 font-mono text-xs">$1</code>')
+        .replace(/`([^`]+)`/g, '<code class="bg-gray-700 px-1 rounded text-orange-300 font-mono text-xs break-all">$1</code>')
         .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-gray-100">$1</strong>')
         .replace(/\*([^*]+)\*/g, '<em>$1</em>');
 }
 
-export default function AiPanel({ response }: Props) {
+export default function AiPanel({ response: propResponse }: Props) {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -60,7 +60,9 @@ export default function AiPanel({ response }: Props) {
     const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const { tabs, activeTabId } = useTabStore();
-    const activeRequest = tabs.find(t => t.id === activeTabId)?.request;
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    const activeRequest = activeTab?.request;
+    const response = propResponse !== undefined ? propResponse : (activeTab?.response || null);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -221,11 +223,11 @@ export default function AiPanel({ response }: Props) {
                     {messages.map((msg, i) => (
                         <div key={i} className={`flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                             {msg.role === 'user' ? (
-                                <div className="max-w-[85%] rounded-xl rounded-tr-sm bg-orange-500/20 border border-orange-500/20 px-3 py-2">
+                                <div className="max-w-[85%] rounded-xl rounded-tr-sm bg-orange-500/20 border border-orange-500/20 px-3 py-2 break-words overflow-hidden">
                                     <p className="text-xs text-orange-200">{msg.text}</p>
                                 </div>
                             ) : (
-                                <div className="w-full rounded-xl rounded-tl-sm bg-gray-800 border border-gray-700 px-3 py-2.5 group">
+                                <div className="w-full rounded-xl rounded-tl-sm bg-gray-800 border border-gray-700 px-3 py-2.5 group break-words overflow-hidden">
                                     <MarkdownText text={msg.text} />
                                     <button
                                         onClick={() => copyMessage(msg.text, i)}

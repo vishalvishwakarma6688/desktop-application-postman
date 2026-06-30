@@ -34,7 +34,12 @@ export default function RequestEditor() {
     const activeRequest = activeTab?.request;
 
     const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor' | 'stress'>('params');
-    const [response, setResponse] = useState<any>(null);
+    const response = activeTab?.response || null;
+    const setResponse = (newResponse: any) => {
+        if (activeTab) {
+            updateTab(activeTab.id, { response: newResponse });
+        }
+    };
     const [testResults, setTestResults] = useState<{ name: string; passed: boolean; error?: string }[]>([]);
     const [isCancelled, setIsCancelled] = useState(false);
     const [requestPanelHeight, setRequestPanelHeight] = useState(200);
