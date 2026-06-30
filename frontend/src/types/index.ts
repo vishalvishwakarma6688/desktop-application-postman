@@ -59,6 +59,26 @@ export interface Request {
     createdBy?: User;
     createdAt: string;
     updatedAt: string;
+    examples?: SavedExample[];
+}
+
+export interface SavedExample {
+    _id?: string;
+    name: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    url: string;
+    headers: KeyValue[];
+    queryParams: KeyValue[];
+    body: RequestBody;
+    response: {
+        status: number;
+        statusText: string;
+        time: number;
+        size: number;
+        headers: Record<string, string>;
+        data: any;
+    };
+    savedAt?: string;
 }
 
 export interface KeyValue {

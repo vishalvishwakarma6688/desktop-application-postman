@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // Test auto-bump trigger v2
-import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2, X, Info, CheckCircle2, AlertTriangle, XCircle, Trash2 } from 'lucide-react';
+import { Settings, Bell, ChevronDown, LogOut, Globe, History, GitBranch, Share2, X, Info, CheckCircle2, AlertTriangle, XCircle, Trash2, Eye } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRequestStore } from '@/store/useRequestStore';
@@ -46,6 +46,7 @@ export default function AppHeader() {
     const [showLanSharePanel, setShowLanSharePanel] = useState(false);
     const [showCollaboratorsPanel, setShowCollaboratorsPanel] = useState(false);
     const [showNotificationMenu, setShowNotificationMenu] = useState(false);
+    const [showQuickLook, setShowQuickLook] = useState(false);
 
     const { notifications, markAsRead, markAllAsRead, clearNotification, clearAll } = useNotificationStore();
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -99,50 +100,129 @@ export default function AppHeader() {
 
             {/* Divider */}
             <div className="h-4 w-px bg-gray-700 mx-1" />
-
-            {/* Environment selector */}
-            <div className="relative">
-                <button
-                    onClick={() => { setShowEnvMenu(v => !v); setShowWorkspaceMenu(false); setShowUserMenu(false); }}
-                    className="flex items-center gap-1.5 rounded px-2.5 py-1 text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
-                >
-                    <Globe className="h-3.5 w-3.5" />
-                    <span className="max-w-[120px] truncate">{activeEnvironment?.name || 'No Environment'}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-gray-600" />
-                </button>
-                {showEnvMenu && (
-                    <div className="absolute left-0 top-full z-50 mt-1 w-52 rounded border border-gray-700 bg-gray-900 shadow-xl">
-                        <div className="px-3 py-2 text-xs font-semibold uppercase text-gray-500 border-b border-gray-800">Environment</div>
-                        <button
-                            onClick={() => { setActiveEnvironment(null); setShowEnvMenu(false); }}
-                            className={`flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-gray-800 ${!activeEnvironment ? 'text-orange-400' : 'text-gray-400'}`}
-                        >
-                            No Environment
-                            {!activeEnvironment && <span className="ml-auto text-xs">✓</span>}
-                        </button>
-                        {environments.map(env => (
+             {/* Environment selector */}
+            <div className="flex items-center gap-1">
+                <div className="relative">
+                    <button
+                        onClick={() => { setShowEnvMenu(v => !v); setShowWorkspaceMenu(false); setShowUserMenu(false); setShowQuickLook(false); }}
+                        className="flex items-center gap-1.5 rounded px-2.5 py-1 text-sm text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+                    >
+                        <Globe className="h-3.5 w-3.5" />
+                        <span className="max-w-[120px] truncate">{activeEnvironment?.name || 'No Environment'}</span>
+                        <ChevronDown className="h-3.5 w-3.5 text-gray-600" />
+                    </button>
+                    {showEnvMenu && (
+                        <div className="absolute left-0 top-full z-50 mt-1 w-52 rounded border border-gray-700 bg-gray-900 shadow-xl">
+                            <div className="px-3 py-2 text-xs font-semibold uppercase text-gray-500 border-b border-gray-800">Environment</div>
                             <button
-                                key={env._id}
-                                onClick={() => { setActiveEnvironment(env); setShowEnvMenu(false); }}
-                                className={`flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-gray-800 ${activeEnvironment?._id === env._id ? 'text-orange-400' : 'text-gray-300'}`}
+                                onClick={() => { setActiveEnvironment(null); setShowEnvMenu(false); }}
+                                className={`flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-gray-800 ${!activeEnvironment ? 'text-orange-400' : 'text-gray-400'}`}
                             >
-                                <span className="truncate">{env.name}</span>
-                                {activeEnvironment?._id === env._id && <span className="ml-auto text-xs">✓</span>}
+                                No Environment
+                                {!activeEnvironment && <span className="ml-auto text-xs">✓</span>}
                             </button>
-                        ))}
-                        {environments.length === 0 && (
-                            <div className="px-3 py-2 text-xs text-gray-600">No environments yet</div>
-                        )}
-                        <div className="border-t border-gray-800 mt-1">
-                            <button
-                                onClick={() => { setShowEnvMenu(false); setShowEnvPanel(true); }}
-                                className="flex w-full items-center px-3 py-2 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
-                            >
-                                Manage Environments
-                            </button>
+                            {environments.map(env => (
+                                <button
+                                    key={env._id}
+                                    onClick={() => { setActiveEnvironment(env); setShowEnvMenu(false); }}
+                                    className={`flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-gray-800 ${activeEnvironment?._id === env._id ? 'text-orange-400' : 'text-gray-300'}`}
+                                >
+                                    <span className="truncate">{env.name}</span>
+                                    {activeEnvironment?._id === env._id && <span className="ml-auto text-xs">✓</span>}
+                                </button>
+                            ))}
+                            {environments.length === 0 && (
+                                <div className="px-3 py-2 text-xs text-gray-600">No environments yet</div>
+                            )}
+                            <div className="border-t border-gray-800 mt-1">
+                                <button
+                                    onClick={() => { setShowEnvMenu(false); setShowEnvPanel(true); }}
+                                    className="flex w-full items-center px-3 py-2 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
+                                >
+                                    Manage Environments
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+
+                {/* Quick Look Eye Icon */}
+                <div className="relative">
+                    <button
+                        onClick={() => { setShowQuickLook(v => !v); setShowEnvMenu(false); setShowWorkspaceMenu(false); setShowUserMenu(false); }}
+                        className={`rounded p-1 transition-all ${
+                            showQuickLook 
+                                ? 'bg-orange-500/15 text-orange-400 border border-orange-500/30' 
+                                : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300 border border-transparent'
+                        }`}
+                        title="Environment Quick Look"
+                    >
+                        <Eye className="h-3.5 w-3.5" />
+                    </button>
+
+                    {showQuickLook && (
+                        <div className="absolute left-0 top-full z-50 mt-1.5 w-80 rounded-xl border border-gray-800 bg-gray-900/95 backdrop-blur-md p-4 shadow-2xl space-y-3 select-text">
+                            {/* Header */}
+                            <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Active Environment</span>
+                                    <span className="text-xs font-semibold text-gray-200">{activeEnvironment?.name || 'No Environment'}</span>
+                                </div>
+                                <button
+                                    onClick={() => setShowQuickLook(false)}
+                                    className="rounded p-0.5 hover:bg-gray-850 text-gray-550 hover:text-gray-350 transition-colors"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+
+                            {/* Variables list */}
+                            {activeEnvironment ? (
+                                <div className="max-h-60 overflow-auto space-y-2.5 pr-0.5">
+                                    {activeEnvironment.variables && activeEnvironment.variables.length > 0 ? (
+                                        <div className="space-y-2">
+                                            <div className="grid grid-cols-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 border-b border-gray-800/40 pb-1 shrink-0">
+                                                <span>Variable</span>
+                                                <span>Value</span>
+                                            </div>
+                                            {activeEnvironment.variables.map((v, idx) => (
+                                                <div 
+                                                    key={idx} 
+                                                    className={`grid grid-cols-2 gap-2 text-xs font-mono py-0.5 transition-opacity ${
+                                                        v.enabled ? 'text-gray-300' : 'opacity-40'
+                                                    }`}
+                                                >
+                                                    <span className="text-orange-400 truncate font-semibold" title={v.key}>{v.key}</span>
+                                                    <span className="text-gray-400 truncate" title={v.isSecret ? 'Secret Key' : v.value}>
+                                                        {v.isSecret ? '••••••••' : v.value || <span className="italic text-gray-600">empty</span>}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="py-4 text-center text-xs text-gray-500 italic">
+                                            No variables defined.
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="py-4 text-center text-xs text-gray-500 leading-relaxed">
+                                    No active environment. Select one from the dropdown to inspect its variables.
+                                </div>
+                            )}
+
+                            {/* Footer links */}
+                            <div className="border-t border-gray-800 pt-2 flex justify-end">
+                                <button
+                                    onClick={() => { setShowQuickLook(false); setShowEnvPanel(true); }}
+                                    className="text-[10px] font-semibold text-orange-400 hover:text-orange-350 transition-colors"
+                                >
+                                    Manage Environments
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
             {/* Git Branch Indicator */}
             {currentWorkspace?.localDirectory && (
@@ -395,8 +475,8 @@ export default function AppHeader() {
             </div>
 
             {/* Click outside to close menus */}
-            {(showWorkspaceMenu || showEnvMenu || showUserMenu || showNotificationMenu) && (
-                <div className="fixed inset-0 z-40" onClick={() => { setShowWorkspaceMenu(false); setShowEnvMenu(false); setShowUserMenu(false); setShowNotificationMenu(false); }} />
+            {(showWorkspaceMenu || showEnvMenu || showUserMenu || showNotificationMenu || showQuickLook) && (
+                <div className="fixed inset-0 z-40" onClick={() => { setShowWorkspaceMenu(false); setShowEnvMenu(false); setShowUserMenu(false); setShowNotificationMenu(false); setShowQuickLook(false); }} />
             )}
 
             {/* Environment Panel Modal */}

@@ -141,6 +141,38 @@ const requestSchema = new mongoose.Schema({
             default: ''
         }
     },
+    examples: [{
+        name: { type: String, default: 'Saved Example' },
+        method: { type: String },
+        url: { type: String },
+        headers: [{
+            key: String,
+            value: String,
+            enabled: Boolean
+        }],
+        queryParams: [{
+            key: String,
+            value: String,
+            enabled: Boolean
+        }],
+        body: {
+            type: {
+                type: String,
+                enum: ['json', 'form-data', 'raw', 'none'],
+                default: 'none'
+            },
+            content: mongoose.Schema.Types.Mixed
+        },
+        response: {
+            status: Number,
+            statusText: String,
+            time: Number,
+            size: Number,
+            headers: mongoose.Schema.Types.Mixed,
+            data: mongoose.Schema.Types.Mixed
+        },
+        savedAt: { type: Date, default: Date.now }
+    }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

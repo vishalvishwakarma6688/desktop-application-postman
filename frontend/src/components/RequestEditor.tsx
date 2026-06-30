@@ -15,6 +15,7 @@ import ResponsePanel from './request/ResponsePanel';
 import ScriptEditor from './request/ScriptEditor';
 import RequestMonitorSettings from './RequestMonitorSettings';
 import StressTestTab from './request/StressTestTab';
+import SavedExamplesTab from './request/SavedExamplesTab';
 import RightSidebar from './RightSidebar';
 import { parseCurl, isCurlCommand } from '@/utils/curlParser';
 import { triggerLocalSync } from '@/utils/localSync';
@@ -33,7 +34,7 @@ export default function RequestEditor() {
     const activeTab = tabs.find(t => t.id === activeTabId);
     const activeRequest = activeTab?.request;
 
-    const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor' | 'stress'>('params');
+    const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor' | 'stress' | 'examples'>('params');
     const response = activeTab?.response || null;
     const setResponse = (newResponse: any) => {
         if (activeTab) {
@@ -43,6 +44,8 @@ export default function RequestEditor() {
     const [testResults, setTestResults] = useState<{ name: string; passed: boolean; error?: string }[]>([]);
     const [isCancelled, setIsCancelled] = useState(false);
     const [requestPanelHeight, setRequestPanelHeight] = useState(200);
+    const [showSaveExampleModal, setShowSaveExampleModal] = useState(false);
+    const [newExampleName, setNewExampleName] = useState('');
     const [urlSuggestions, setUrlSuggestions] = useState<{ url: string; method: string }[]>([]);
     const [showUrlSuggestions, setShowUrlSuggestions] = useState(false);
     const [showRightSidebar, setShowRightSidebar] = useState(false);
@@ -177,6 +180,46 @@ export default function RequestEditor() {
         cancelledRef.current = true;
         setIsCancelled(true);
         setResponse({ error: 'Request cancelled by user' });
+    };
+
+    const handleSaveExample = () => {
+        if (!newExampleName.trim() || !response || !activeRequest || !activeTab) return;
+
+        const newExample = {
+            name: newExampleName.trim(),
+            method: activeRequest.method,
+            url: activeRequest.url,
+            headers: JSON.parse(JSON.stringify(activeRequest.headers || [])),
+            queryParams: JSON.parse(JSON.stringify(activeRequest.queryParams || [])),
+            body: JSON.parse(JSON.stringify(activeRequest.body || { type: 'none', content: null })),
+            response: {
+                status: response.status,
+                statusText: response.statusText,
+                time: response.executionTime || 0,
+                size: new Blob([JSON.stringify(response.data || '')]).size,
+                headers: response.headers || {},
+                data: response.data
+            },
+            savedAt: new Date().toISOString()
+        };
+
+        const updatedExamples = [...(activeRequest.examples || []), newExample];
+
+        saveMutation.mutate({
+            id: activeRequest._id,
+            updates: {
+                examples: updatedExamples
+            }
+        }, {
+            onSuccess: (res) => {
+                setShowSaveExampleModal(false);
+                setNewExampleName('');
+                if (res.data) {
+                    updateTab(activeTab.id, { request: res.data });
+                    toast.success('Response saved as example!');
+                }
+            }
+        });
     };
 
     const patch = (updates: Record<string, any>) => {
@@ -480,19 +523,21 @@ export default function RequestEditor() {
                     {/* Tab nav */}
                     <div className="border-b border-gray-800 shrink-0">
                         <div className="flex gap-1 px-6">
-                            {(['params', 'headers', 'body', 'auth', 'scripts', 'monitor', 'stress'] as const).map((tab) => {
+                            {(['params', 'headers', 'body', 'auth', 'scripts', 'monitor', 'stress', 'examples'] as const).map((tab) => {
                                 const badge = tab === 'params'
                                     ? (activeRequest.queryParams?.filter(p => p.key).length || null)
                                     : tab === 'headers'
                                         ? (activeRequest.headers?.filter(h => h.key).length || null)
                                         : tab === 'monitor' && activeRequest.monitorSettings?.isMonitored
                                             ? 'on'
-                                            : null;
+                                            : tab === 'examples'
+                                                ? (activeRequest.examples?.length || null)
+                                                : null;
                                 return (
                                     <button key={tab} onClick={() => setCurrentTab(tab)}
                                         className={`relative px-3 py-2.5 text-sm font-medium capitalize transition-colors ${currentTab === tab ? 'text-orange-500' : 'text-gray-400 hover:text-gray-300'}`}
                                     >
-                                        {tab === 'monitor' ? 'Health Monitor' : tab === 'stress' ? 'Stress Test' : tab}
+                                        {tab === 'monitor' ? 'Health Monitor' : tab === 'stress' ? 'Stress Test' : tab === 'examples' ? 'Saved Examples' : tab}
                                         {badge ? <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${tab === 'monitor' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>{badge}</span> : null}
                                         {currentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500" />}
                                     </button>
@@ -513,6 +558,11 @@ export default function RequestEditor() {
                             <div className="flex-1 overflow-auto">
                                 <StressTestTab request={activeRequest} />
                             </div>
+                        ) : currentTab === 'examples' ? (
+                            /* ── Full-height saved examples panel ── */
+                            <div className="flex-1 overflow-auto">
+                                <SavedExamplesTab request={activeRequest} onUpdate={(updates) => patch(updates)} />
+                            </div>
                         ) : (
                             <>
                                 <div style={{ height: requestPanelHeight }} className="overflow-auto p-4 shrink-0">
@@ -530,7 +580,7 @@ export default function RequestEditor() {
                                     </div>
                                 </div>
 
-                                <ResponsePanel response={response} isSending={isSending} onCancel={handleCancel} testResults={testResults} />
+                                <ResponsePanel response={response} isSending={isSending} onCancel={handleCancel} testResults={testResults} onSaveExample={() => setShowSaveExampleModal(true)} />
                             </>
                         )}
                     </div>
@@ -600,6 +650,68 @@ export default function RequestEditor() {
                     request={activeRequest}
                 />
             </div>
+
+            {/* Save Response Example Modal */}
+            {showSaveExampleModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSaveExampleModal(false)} />
+
+                    {/* Premium Modal Container */}
+                    <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-2xl transition-all duration-300">
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b border-gray-800 bg-gray-950 px-5 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded bg-orange-500/10 text-orange-400">
+                                    <Save className="h-4 w-4" />
+                                </div>
+                                <h2 className="text-sm font-semibold text-gray-200">Save Response as Example</h2>
+                            </div>
+                            <button
+                                onClick={() => setShowSaveExampleModal(false)}
+                                className="rounded p-1 text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 space-y-4 text-left">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Example Name</label>
+                                <input
+                                    type="text"
+                                    autoFocus
+                                    value={newExampleName}
+                                    onChange={(e) => setNewExampleName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && newExampleName.trim()) {
+                                            handleSaveExample();
+                                        }
+                                    }}
+                                    placeholder="e.g. 200 OK - Successful response"
+                                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-gray-105 placeholder-gray-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30"
+                                />
+                            </div>
+                            <div className="flex items-center justify-end gap-3 pt-2">
+                                <button
+                                    onClick={() => setShowSaveExampleModal(false)}
+                                    className="rounded-lg border border-gray-700 bg-transparent px-4 py-2 text-xs font-semibold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveExample}
+                                    disabled={!newExampleName.trim()}
+                                    className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Save Example
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

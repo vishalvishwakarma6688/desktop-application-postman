@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Send, Clock, CheckCircle, XCircle, Copy, Check, X, Search, GitCompare } from 'lucide-react';
+import { Send, Clock, CheckCircle, XCircle, Copy, Check, X, Search, GitCompare, Save } from 'lucide-react';
 import { DiffViewer } from '../diff/DiffViewer';
 import type { ApiResponseData } from '../../types/diff';
 
@@ -9,6 +9,7 @@ interface Props {
     isSending: boolean;
     onCancel?: () => void;
     testResults?: { name: string; passed: boolean; error?: string }[];
+    onSaveExample?: () => void;
 }
 
 function getStatusColor(status: number) {
@@ -17,7 +18,7 @@ function getStatusColor(status: number) {
     return 'text-red-400';
 }
 
-export default function ResponsePanel({ response, isSending, onCancel, testResults = [] }: Props) {
+export default function ResponsePanel({ response, isSending, onCancel, testResults = [], onSaveExample }: Props) {
     const [view, setView] = useState<'pretty' | 'raw' | 'headers' | 'tests'>('pretty');
     const [copied, setCopied] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -132,6 +133,18 @@ export default function ResponsePanel({ response, isSending, onCancel, testResul
 
                 {response && !response.error && (
                     <div className="flex items-center gap-2">
+                        {/* Save Response Button */}
+                        {onSaveExample && (
+                            <button
+                                onClick={onSaveExample}
+                                className="flex items-center gap-1.5 rounded border border-gray-700 bg-gray-800/20 px-2.5 py-1 text-xs text-gray-400 hover:bg-gray-850 hover:text-gray-200 transition-colors"
+                                title="Save this response as an example"
+                            >
+                                <Save className="h-3.5 w-3.5" />
+                                Save Response
+                            </button>
+                        )}
+
                         {/* Compare Button */}
                         <button
                             onClick={() => setShowDiffViewer(true)}
