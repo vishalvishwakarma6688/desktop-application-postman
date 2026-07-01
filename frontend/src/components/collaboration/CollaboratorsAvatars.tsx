@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Users } from 'lucide-react';
 import { useCollaborationStore } from '@/store/useCollaborationStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface CollaboratorsAvatarsProps {
     onOpenPanel?: () => void;
@@ -18,9 +19,16 @@ export default function CollaboratorsAvatars({ onOpenPanel }: CollaboratorsAvata
     const { activeUsers, isConnected } = useCollaborationStore();
     const [hoveredUserId, setHoveredUserId] = useState<string | null>(null);
 
+    const { user } = useAuthStore();
+
     if (!currentWorkspace) {
         return null;
     }
+
+    const isOwner = user && (
+        (typeof currentWorkspace.owner === 'object' && currentWorkspace.owner?._id === user._id) ||
+        (typeof currentWorkspace.owner === 'string' && currentWorkspace.owner === user._id)
+    );
 
     // Convert Map to array
     const users = Array.from(activeUsers.values());
@@ -103,7 +111,9 @@ export default function CollaboratorsAvatars({ onOpenPanel }: CollaboratorsAvata
                     </div>
                 )}
 
-                <span className="text-xs text-gray-400 font-medium">Invite for Collab</span>
+                <span className="text-xs text-gray-400 font-medium">
+                    {isOwner ? 'Invite for Collab' : 'Active Collab'}
+                </span>
                 <Users className="h-4 w-4 text-gray-400" />
             </button>
 
