@@ -16,9 +16,14 @@ import ScriptEditor from './request/ScriptEditor';
 import RequestMonitorSettings from './RequestMonitorSettings';
 import StressTestTab from './request/StressTestTab';
 import SavedExamplesTab from './request/SavedExamplesTab';
+import WebSocketEditor from './request/WebSocketEditor';
+import GrpcEditor from './request/GrpcEditor';
+import GraphqlEditor from './request/GraphqlEditor';
 import RightSidebar from './RightSidebar';
 import { parseCurl, isCurlCommand } from '@/utils/curlParser';
 import { triggerLocalSync } from '@/utils/localSync';
+import { useCollaborationStore } from '@/store/useCollaborationStore';
+import { collaborationService } from '@/services/collaborationService';
 
 const METHOD_COLORS: Record<string, string> = {
     GET: 'text-green-400', POST: 'text-yellow-400',
@@ -33,6 +38,8 @@ export default function RequestEditor() {
     const { currentWorkspace } = useWorkspaceStore();
     const activeTab = tabs.find(t => t.id === activeTabId);
     const activeRequest = activeTab?.request;
+    const { activeUsers } = useCollaborationStore();
+    const urlFocusedUser = Array.from(activeUsers.values()).find(u => u.focusedField === 'url');
 
     const [currentTab, setCurrentTab] = useState<'params' | 'headers' | 'body' | 'auth' | 'scripts' | 'monitor' | 'stress' | 'examples'>('params');
     const response = activeTab?.response || null;
@@ -383,9 +390,35 @@ export default function RequestEditor() {
                     {/* Name bar */}
                     <div className="border-b border-gray-800 px-6 py-3 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-3 min-w-0">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded bg-gray-800 shrink-0 ${METHOD_COLORS[activeRequest.method] || 'text-gray-400'}`}>
-                                {activeRequest.method}
-                            </span>
+                            {activeRequest.type === 'websocket' ? (
+                                <span className="text-[10px] font-bold px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wide shrink-0">
+                                    WS
+                                </span>
+                            ) : activeRequest.type === 'grpc' ? (
+                                <span className="text-[10px] font-bold px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wide shrink-0">
+                                    gRPC
+                                </span>
+                            ) : activeRequest.type === 'graphql' ? (
+                                <span className="text-[10px] font-bold px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase tracking-wide shrink-0">
+                                    GQL
+                                </span>
+                            ) : (
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded bg-gray-800 shrink-0 ${METHOD_COLORS[activeRequest.method] || 'text-gray-400'}`}>
+                                    {activeRequest.method}
+                                </span>
+                            )}
+
+                            <Select value={activeRequest.type || 'http'} onValueChange={(v) => patch({ type: v })}>
+                                <SelectTrigger className="w-24 border-gray-700 bg-gray-850 text-[10px] uppercase font-bold text-gray-500 px-2 py-1 h-7 rounded">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-900 border-gray-800 text-gray-305">
+                                    <SelectItem value="http" className="hover:bg-gray-800 cursor-pointer text-green-400 font-bold text-[10px]">HTTP</SelectItem>
+                                    <SelectItem value="websocket" className="hover:bg-gray-800 cursor-pointer text-indigo-400 font-bold text-[10px]">WebSocket</SelectItem>
+                                    <SelectItem value="grpc" className="hover:bg-gray-800 cursor-pointer text-blue-400 font-bold text-[10px]">gRPC</SelectItem>
+                                    <SelectItem value="graphql" className="hover:bg-gray-800 cursor-pointer text-purple-400 font-bold text-[10px]">GraphQL</SelectItem>
+                                </SelectContent>
+                            </Select>
                             {isEditingName ? (
                                 <input
                                     autoFocus
@@ -419,9 +452,17 @@ export default function RequestEditor() {
                         )}
                     </div>
 
-                    {/* URL bar */}
-                    <div className="border-b border-gray-800 px-6 py-3 shrink-0">
-                        <div className="flex gap-2">
+                    {activeRequest.type === 'websocket' ? (
+                        <WebSocketEditor request={activeRequest} onUpdate={(updates) => patch(updates)} />
+                    ) : activeRequest.type === 'grpc' ? (
+                        <GrpcEditor request={activeRequest} onUpdate={(updates) => patch(updates)} />
+                    ) : activeRequest.type === 'graphql' ? (
+                        <GraphqlEditor request={activeRequest} onUpdate={(updates) => patch(updates)} />
+                    ) : (
+                        <>
+                            {/* URL bar */}
+                            <div className="border-b border-gray-800 px-6 py-3 shrink-0">
+                                <div className="flex gap-2">
                             <Select value={activeRequest.method} onValueChange={(v) => patch({ method: v })}>
                                 <SelectTrigger className={`w-28 font-bold border-gray-700 bg-gray-800 ${METHOD_COLORS[activeRequest.method] || 'text-gray-400'}`}>
                                     <SelectValue />
@@ -447,15 +488,32 @@ export default function RequestEditor() {
                                     }}
                                     onKeyDown={(e) => e.key === 'Enter' && !isSending && handleSend()}
                                     onFocus={async () => {
+                                        collaborationService.sendFocusField('url');
                                         const suggestions = await requestApi.getUrlSuggestions('');
                                         setUrlSuggestions(suggestions);
                                         setShowUrlSuggestions(suggestions.length > 0);
                                     }}
-                                    onBlur={() => setTimeout(() => setShowUrlSuggestions(false), 150)}
+                                    onBlur={() => {
+                                        collaborationService.sendFocusField(null);
+                                        setTimeout(() => setShowUrlSuggestions(false), 150);
+                                    }}
                                     placeholder="https://api.example.com/endpoint"
-                                    className="w-full rounded border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30"
+                                    className="w-full rounded border bg-gray-800 px-4 py-2 pr-28 text-sm text-gray-100 placeholder-gray-500 focus:outline-none transition-all duration-200"
+                                    style={{
+                                        borderColor: urlFocusedUser ? urlFocusedUser.color : '#374151',
+                                        boxShadow: urlFocusedUser ? `0 0 0 2px ${urlFocusedUser.color}22` : undefined
+                                    }}
                                     autoComplete="off"
                                 />
+                                {urlFocusedUser && (
+                                    <div 
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold text-white pointer-events-none select-none transition-all duration-200 animate-pulse"
+                                        style={{ backgroundColor: urlFocusedUser.color }}
+                                    >
+                                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                                        <span>{urlFocusedUser.userName}</span>
+                                    </div>
+                                )}
                                 {showUrlSuggestions && (
                                     <ul className="absolute z-50 top-full left-0 mt-0.5 w-full max-h-52 overflow-auto rounded border border-gray-700 bg-gray-900 shadow-xl">
                                         {urlSuggestions.map((s, i) => (
@@ -584,6 +642,8 @@ export default function RequestEditor() {
                             </>
                         )}
                     </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Vertical Icon Sidebar */}

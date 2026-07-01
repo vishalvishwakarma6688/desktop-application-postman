@@ -20,7 +20,11 @@ const collectionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'Creator reference is required']
-    }
+    },
+    folders: [{
+        name: { type: String, required: true },
+        parentFolder: { type: mongoose.Schema.Types.ObjectId, default: null }
+    }]
 }, {
     timestamps: true,
     suppressReservedKeysWarning: true

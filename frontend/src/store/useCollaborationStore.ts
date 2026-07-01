@@ -16,6 +16,7 @@ export interface CollaboratorUser {
         start: { line: number; column: number };
         end: { line: number; column: number };
     } | null;
+    focusedField?: string | null;
     lastActivity: Date;
 }
 

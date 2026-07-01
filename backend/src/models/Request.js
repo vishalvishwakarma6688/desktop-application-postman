@@ -6,10 +6,19 @@ const requestSchema = new mongoose.Schema({
         required: [true, 'Request name is required'],
         trim: true
     },
+    type: {
+        type: String,
+        enum: ['http', 'websocket', 'grpc', 'graphql'],
+        default: 'http'
+    },
     collection: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Collection',
         required: [true, 'Collection reference is required']
+    },
+    folder: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
     },
     workspace: {
         type: mongoose.Schema.Types.ObjectId,

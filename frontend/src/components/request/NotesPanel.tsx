@@ -5,6 +5,8 @@ import { requestApi } from '@/features/requests/api';
 import toast from 'react-hot-toast';
 import { Request } from '@/types';
 import { useTabStore } from '@/store/useTabStore';
+import { useCollaborationStore } from '@/store/useCollaborationStore';
+import { collaborationService } from '@/services/collaborationService';
 
 interface Props {
     request: Request;
@@ -14,6 +16,8 @@ export default function NotesPanel({ request }: Props) {
     const [value, setValue] = useState(request.notes || '');
     const [isEditing, setIsEditing] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
+    const { activeUsers } = useCollaborationStore();
+    const notesFocusedUser = Array.from(activeUsers.values()).find(u => u.focusedField === 'notes');
     const queryClient = useQueryClient();
     const { tabs, activeTabId, updateTab } = useTabStore();
 
@@ -275,14 +279,29 @@ export default function NotesPanel({ request }: Props) {
             {/* Content Area */}
             <div className="flex-1 overflow-auto">
                 {isEditing ? (
-                    <div className="p-4 space-y-3">
+                    <div className="p-4 space-y-3 relative">
                         <textarea
                             value={value}
                             onChange={(e) => handleChange(e.target.value)}
                             placeholder="# Getting Started&#10;&#10;Document this API endpoint with usage instructions, examples, or any helpful notes...&#10;&#10;## Markdown Supported&#10;- **Bold text** with double asterisks&#10;- `Inline code` with backticks&#10;- Lists with dashes&#10;- > Blockquotes&#10;&#10;## Example&#10;This endpoint requires authentication. Use Bearer token in headers."
-                            className="w-full min-h-[400px] bg-gray-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-300 font-mono focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 resize-none placeholder:text-gray-600"
+                            onFocus={() => collaborationService.sendFocusField('notes')}
+                            onBlur={() => collaborationService.sendFocusField(null)}
+                            className="w-full min-h-[400px] bg-gray-950 border rounded-xl px-4 py-3 text-sm text-gray-300 font-mono focus:outline-none resize-none placeholder:text-gray-600 transition-all duration-200"
+                            style={{
+                                borderColor: notesFocusedUser ? notesFocusedUser.color : '#374151',
+                                boxShadow: notesFocusedUser ? `0 0 0 2px ${notesFocusedUser.color}22` : undefined
+                            }}
                             autoFocus
                         />
+                        {notesFocusedUser && (
+                            <div 
+                                className="absolute right-7 bottom-16 flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold text-white pointer-events-none select-none transition-all duration-200 animate-pulse"
+                                style={{ backgroundColor: notesFocusedUser.color }}
+                            >
+                                <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                                <span>{notesFocusedUser.userName} editing</span>
+                            </div>
+                        )}
 
                         {/* Action Buttons */}
                         <div className="flex items-center justify-between pt-2">

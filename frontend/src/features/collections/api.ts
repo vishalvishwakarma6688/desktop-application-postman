@@ -23,7 +23,7 @@ export const collectionApi = {
 
     update: async (
         id: string,
-        data: { name?: string; description?: string }
+        data: { name?: string; description?: string; folders?: any[] }
     ): Promise<ApiResponse<Collection>> => {
         const response = await api.put(`/collections/${id}`, data);
         return response.data;

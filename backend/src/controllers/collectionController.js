@@ -84,7 +84,7 @@ export const getCollectionById = async (req, res, next) => {
 // @access  Private
 export const updateCollection = async (req, res, next) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, folders } = req.body;
 
         const collection = await Collection.findById(req.params.id);
 
@@ -97,6 +97,7 @@ export const updateCollection = async (req, res, next) => {
 
         if (name) collection.name = name;
         if (description !== undefined) collection.description = description;
+        if (folders !== undefined) collection.folders = folders;
 
         await collection.save();
 

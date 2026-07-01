@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { useCollaborationStore, CollaboratorUser, CollaborationSession } from '@/store/useCollaborationStore';
 import { Operation } from './otClient';
 import { useNotificationStore } from '@/store/useNotificationStore';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
 
@@ -209,6 +210,11 @@ class CollaborationService {
             }
         });
 
+        // Focus field changes
+        this.socket.on('user-focused-field', (data: { userId: string; fieldId: string | null }) => {
+            store.updateUser(data.userId, { focusedField: data.fieldId });
+        });
+
         // Error events
         this.socket.on('error', (data: { message: string }) => {
             console.error('Collaboration error:', data.message);
@@ -342,6 +348,21 @@ class CollaborationService {
             resourceId: session.resourceId,
             field,
             isTyping
+        });
+    }
+
+    /**
+     * Broadcast focus field changes
+     */
+    sendFocusField(fieldId: string | null): void {
+        if (!this.socket?.connected) return;
+
+        const workspaceId = useWorkspaceStore.getState().currentWorkspace?._id;
+        if (!workspaceId) return;
+
+        this.socket.emit('focus-field', {
+            workspaceId,
+            fieldId
         });
     }
 

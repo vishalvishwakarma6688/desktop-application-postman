@@ -47,8 +47,8 @@ export default function CollaboratorsAvatars({ onOpenPanel }: CollaboratorsAvata
                     : 'Collaborators & Members'
                 }
             >
-                {users.length > 0 ? (
-                    <div className="flex items-center -space-x-2">
+                {users.length > 0 && (
+                    <div className="flex items-center -space-x-2 mr-1">
                         {visibleUsers.map((user, index) => (
                             <div
                                 key={user.userId}
@@ -101,11 +101,9 @@ export default function CollaboratorsAvatars({ onOpenPanel }: CollaboratorsAvata
                             </div>
                         )}
                     </div>
-                ) : (
-                    <span className="text-xs text-gray-400 font-medium">Invite</span>
                 )}
 
-                {/* Icon */}
+                <span className="text-xs text-gray-400 font-medium">Invite for Collab</span>
                 <Users className="h-4 w-4 text-gray-400" />
             </button>
 

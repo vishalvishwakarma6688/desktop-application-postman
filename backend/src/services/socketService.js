@@ -25,7 +25,7 @@ class SocketService {
             cors: {
                 origin: (origin, callback) => {
                     if (!origin) return callback(null, true);
-                    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+                    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*') || origin.startsWith('file://') || origin.startsWith('chrome-extension://')) {
                         callback(null, true);
                     } else {
                         callback(new Error('Not allowed by CORS'));
@@ -106,6 +106,11 @@ class SocketService {
             // Typing indicator
             socket.on('typing', (data) => {
                 this.handleTyping(socket, data);
+            });
+
+            // Focus field changes
+            socket.on('focus-field', async (data) => {
+                await this.handleFocusField(socket, data);
             });
 
             // Disconnect
@@ -505,29 +510,49 @@ class SocketService {
         }
     }
 
-    async getWorkspaceActiveUsers(workspaceId) {
-        const sessions = await CollaborationSession.find({
-            workspaceId,
-            isActive: true
-        }).populate('activeUsers.userId', 'name email avatar');
-
-        const userMap = new Map();
-
-        sessions.forEach(session => {
-            session.activeUsers.forEach(user => {
-                if (!userMap.has(user.userId.toString())) {
-                    userMap.set(user.userId.toString(), {
-                        userId: user.userId._id,
-                        userName: user.userId.name,
-                        userEmail: user.userId.email,
-                        avatar: user.userId.avatar,
-                        color: user.color
-                    });
-                }
+    async handleFocusField(socket, { workspaceId, fieldId }) {
+        try {
+            socket.focusedField = fieldId;
+            const roomName = `workspace:${workspaceId}`;
+            socket.to(roomName).emit('user-focused-field', {
+                userId: socket.userId,
+                fieldId
             });
-        });
+        } catch (error) {
+            console.error('Error in handleFocusField:', error);
+        }
+    }
 
-        return Array.from(userMap.values());
+    async getWorkspaceActiveUsers(workspaceId) {
+        try {
+            const roomName = `workspace:${workspaceId}`;
+            const clients = this.io.sockets.adapter.rooms.get(roomName);
+            const userMap = new Map();
+
+            if (clients) {
+                for (const clientId of clients) {
+                    const clientSocket = this.io.sockets.sockets.get(clientId);
+                    if (clientSocket && clientSocket.user) {
+                        const uid = clientSocket.userId;
+                        if (!userMap.has(uid)) {
+                            userMap.set(uid, {
+                                userId: uid,
+                                userName: clientSocket.user.name,
+                                userEmail: clientSocket.user.email,
+                                avatar: clientSocket.user.avatar,
+                                color: this.getUserColor(uid),
+                                focusedField: clientSocket.focusedField || null
+                            });
+                        }
+                    }
+                }
+            }
+
+            return Array.from(userMap.values());
+        } catch (error) {
+            console.error('Error in getWorkspaceActiveUsers:', error);
+            return [];
+        }
     }
 
     getUserColor(userId) {

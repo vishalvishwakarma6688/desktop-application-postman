@@ -75,7 +75,7 @@ const buildPmObject = (envVars, response, request) => {
 // @access  Private
 export const createRequest = async (req, res, next) => {
     try {
-        const { name, collection, workspace, method, url, headers, queryParams, body, auth, examples } = req.body;
+        const { name, collection, workspace, method, url, headers, queryParams, body, auth, examples, type, folder } = req.body;
 
         if (!name || !collection || !workspace || !method || !url) {
             const error = new Error('Name, collection, workspace, method, and URL are required');
@@ -119,6 +119,8 @@ export const createRequest = async (req, res, next) => {
             auth: auth || { type: 'none' },
             monitorSettings: req.body.monitorSettings || { isMonitored: false, interval: 60 },
             examples: examples || [],
+            type: type || 'http',
+            folder: folder || null,
             createdBy: req.user.userId
         });
 
@@ -197,7 +199,7 @@ export const updateRequest = async (req, res, next) => {
         console.log('🔍 [UPDATE REQUEST] Request Body Keys:', Object.keys(req.body));
         console.log('🔍 [UPDATE REQUEST] Notes in body:', req.body.notes);
 
-        const { name, method, url, headers, queryParams, body, auth, scripts, monitorSettings, notes, examples } = req.body;
+        const { name, method, url, headers, queryParams, body, auth, scripts, monitorSettings, notes, examples, type, folder } = req.body;
 
         const request = await Request.findById(req.params.id);
 
@@ -246,6 +248,8 @@ export const updateRequest = async (req, res, next) => {
         if (scripts !== undefined) request.scripts = scripts;
         if (monitorSettings !== undefined) request.monitorSettings = monitorSettings;
         if (examples !== undefined) request.examples = examples;
+        if (type !== undefined) request.type = type;
+        if (folder !== undefined) request.folder = folder;
         if (notes !== undefined) {
             console.log('✅ [UPDATE REQUEST] Updating notes field to:', notes);
             request.notes = notes;

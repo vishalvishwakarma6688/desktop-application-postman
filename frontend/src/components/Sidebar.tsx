@@ -102,7 +102,7 @@ export default function Sidebar() {
         }
     };
 
-    const handleNewRequest = (collectionId: string) => {
+    const handleNewRequest = (collectionId: string, folderId: string | null = null) => {
         if (!currentWorkspace) return;
         setExpandedCollections(prev => new Set([...prev, collectionId]));
         createRequestMutation.mutate({
@@ -110,6 +110,7 @@ export default function Sidebar() {
             method: 'GET',
             url: 'https://example.com',
             collection: collectionId,
+            folder: folderId,
             workspace: currentWorkspace._id,
             headers: [],
             queryParams: [],
@@ -479,7 +480,7 @@ export default function Sidebar() {
                                                     collection={collection}
                                                     isExpanded={expandedCollections.has(collection._id) || (!!searchQuery && collection.name.toLowerCase().includes(searchQuery.toLowerCase()))}
                                                     onToggle={() => toggleCollection(collection._id)}
-                                                    onNewRequest={() => handleNewRequest(collection._id)}
+                                                    onNewRequest={(folderId) => handleNewRequest(collection._id, folderId)}
                                                     onOpenRequest={handleOpenRequest}
                                                     getMethodColor={getMethodColor}
                                                     searchQuery={searchQuery}

@@ -24,8 +24,8 @@ app.use(cors({
         // Allow requests with no origin (like Electron apps, mobile apps, curl, Postman)
         if (!origin) return callback(null, true);
 
-        // Allow if origin is in the allowed list
-        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+        // Allow if origin is in the allowed list, or is from an Electron app/extension context
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*') || origin.startsWith('file://') || origin.startsWith('chrome-extension://')) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));

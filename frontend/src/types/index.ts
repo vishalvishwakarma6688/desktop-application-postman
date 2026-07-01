@@ -22,12 +22,19 @@ export interface WorkspaceMember {
     role: 'admin' | 'editor' | 'viewer';
 }
 
+export interface Folder {
+    _id: string;
+    name: string;
+    parentFolder?: string | null;
+}
+
 export interface Collection {
     _id: string;
     name: string;
     description?: string;
     workspace: string | Workspace;
     creator: User;
+    folders?: Folder[];
     createdAt: string;
     updatedAt: string;
 }
@@ -36,7 +43,9 @@ export interface Request {
     _id: string;
     name: string;
     collection: string | Collection;
+    folder?: string | null;
     workspace: string | Workspace;
+    type?: 'http' | 'websocket' | 'grpc' | 'graphql';
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     url: string;
     headers: KeyValue[];

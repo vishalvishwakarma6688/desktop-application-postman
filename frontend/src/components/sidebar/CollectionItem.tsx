@@ -11,14 +11,17 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CollectionRunner from '@/components/CollectionRunner';
+import FolderNode from './FolderNode';
 import RequestItem from './RequestItem';
+import { Folder as FolderType } from '@/types';
 import { triggerLocalSync } from '@/utils/localSync';
+import { generateObjectId } from '@/utils/objectId';
 
 interface Props {
     collection: Collection;
     isExpanded: boolean;
     onToggle: () => void;
-    onNewRequest: () => void;
+    onNewRequest: (folderId: string | null) => void;
     onOpenRequest: (r: Request) => void;
     getMethodColor: (m: string) => string;
     searchQuery?: string;
@@ -34,6 +37,17 @@ export default function CollectionItem({
     const [renaming, setRenaming] = useState(false);
     const [renameValue, setRenameValue] = useState(collection.name);
     const [showRunner, setShowRunner] = useState(false);
+    const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+    const [newFolderName, setNewFolderName] = useState('');
+    const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+
+    const toggleFolder = (folderId: string) => {
+        setExpandedFolders(prev => {
+            const next = new Set(prev);
+            next.has(folderId) ? next.delete(folderId) : next.add(folderId);
+            return next;
+        });
+    };
 
     const { data, isLoading } = useQuery({
         queryKey: ['requests', collection._id],
@@ -69,6 +83,38 @@ export default function CollectionItem({
         },
     });
 
+    const updateFoldersMutation = useMutation({
+        mutationFn: (folders: FolderType[]) => collectionApi.update(collection._id, { folders }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['collections'] });
+        },
+    });
+
+    const handleCreateFolder = () => {
+        setShowNewFolderInput(true);
+        setNewFolderName('');
+    };
+
+    const handleCreateFolderSubmit = () => {
+        if (!newFolderName.trim()) return;
+
+        const newFolder: FolderType = {
+            _id: generateObjectId(),
+            name: newFolderName.trim(),
+            parentFolder: null
+        };
+
+        const nextFolders = [...(collection.folders || []), newFolder];
+        updateFoldersMutation.mutate(nextFolders);
+        setShowNewFolderInput(false);
+        setNewFolderName('');
+        toast.success('Folder created');
+    };
+
+    const handleUpdateFolders = (nextFolders: FolderType[]) => {
+        updateFoldersMutation.mutate(nextFolders);
+    };
+
     const handleRenameSubmit = () => {
         if (renameValue.trim() && renameValue !== collection.name) {
             renameMutation.mutate(renameValue.trim());
@@ -84,6 +130,9 @@ export default function CollectionItem({
             r.method.toLowerCase().includes(searchQuery.toLowerCase())
         )
         : requests;
+
+    const topLevelFolders = (collection.folders || []).filter(f => !f.parentFolder);
+    const topLevelRequests = filteredRequests.filter(r => !r.folder);
 
     return (
         <div className="rounded">
@@ -127,14 +176,17 @@ export default function CollectionItem({
                                     <MoreVertical className="h-3 w-3" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={onNewRequest} className="cursor-pointer">
+                            <DropdownMenuContent align="end" className="w-48 bg-gray-900 border-gray-805 text-gray-300">
+                                <DropdownMenuItem onClick={() => onNewRequest(null)} className="cursor-pointer hover:bg-gray-800 text-xs">
                                     <Plus className="mr-2 h-4 w-4" /><span>Add Request</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setShowRunner(true)} className="cursor-pointer">
+                                <DropdownMenuItem onClick={handleCreateFolder} className="cursor-pointer hover:bg-gray-800 text-xs">
+                                    <Folder className="mr-2 h-4 w-4 text-orange-400" /><span>Add Folder</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setShowRunner(true)} className="cursor-pointer hover:bg-gray-800 text-xs">
                                     <Play className="mr-2 h-4 w-4" /><span>Run Collection</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuSeparator />
+                                <DropdownMenuSeparator className="border-gray-800" />
                                 <DropdownMenuItem onClick={() => { setRenaming(true); setRenameValue(collection.name); }} className="cursor-pointer">
                                     <Edit className="mr-2 h-4 w-4" /><span>Rename</span>
                                 </DropdownMenuItem>
@@ -177,9 +229,50 @@ export default function CollectionItem({
                                 </div>
                             ))}
                         </div>
-                    ) : filteredRequests.length > 0 ? (
+                    ) : (topLevelFolders.length > 0 || topLevelRequests.length > 0 || showNewFolderInput) ? (
                         <>
-                            {filteredRequests.map((request) => (
+                            {showNewFolderInput && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-800/40 rounded mt-0.5">
+                                    <Folder className="h-4 w-4 shrink-0 text-orange-400" />
+                                    <input
+                                        autoFocus
+                                        placeholder="Folder name..."
+                                        value={newFolderName}
+                                        onChange={(e) => setNewFolderName(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleCreateFolderSubmit();
+                                            if (e.key === 'Escape') { setShowNewFolderInput(false); setNewFolderName(''); }
+                                        }}
+                                        className="flex-1 min-w-0 rounded border border-orange-500 bg-gray-700 px-2 py-0.5 text-xs text-gray-100 focus:outline-none"
+                                    />
+                                    <button onClick={handleCreateFolderSubmit} className="shrink-0 rounded p-1 hover:bg-gray-600 text-green-400">
+                                        <Check className="h-3 w-3" />
+                                    </button>
+                                    <button onClick={() => { setShowNewFolderInput(false); setNewFolderName(''); }} className="shrink-0 rounded p-1 hover:bg-gray-600 text-gray-400">
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            )}
+                            {/* Render folders tree */}
+                            {topLevelFolders.map((folder) => (
+                                <FolderNode
+                                    key={folder._id}
+                                    folder={folder}
+                                    collection={collection}
+                                    allRequests={requests}
+                                    expandedFolders={expandedFolders}
+                                    onToggleFolder={toggleFolder}
+                                    onNewRequest={onNewRequest}
+                                    onOpenRequest={onOpenRequest}
+                                    onDeleteRequest={(id) => deleteRequestMutation.mutate(id)}
+                                    onUpdateFolders={handleUpdateFolders}
+                                    getMethodColor={getMethodColor}
+                                    activeTabId={activeTabId}
+                                />
+                            ))}
+
+                            {/* Render top-level requests */}
+                            {topLevelRequests.map((request) => (
                                 <RequestItem
                                     key={request._id}
                                     request={request}
@@ -190,6 +283,7 @@ export default function CollectionItem({
                                     isActive={request._id === activeTabId}
                                 />
                             ))}
+
                             {isCreatingRequest && (
                                 <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/40 border border-dashed border-gray-700/50 animate-pulse mt-0.5">
                                     <span className="text-[9px] font-bold text-gray-500 uppercase shrink-0">GET</span>
@@ -199,22 +293,30 @@ export default function CollectionItem({
                         </>
                     ) : (
                         <div className="px-2 py-2 text-center">
-                            <p className="text-xs text-gray-500 mb-1.5">{searchQuery ? 'No matching requests' : 'No requests yet'}</p>
+                            <p className="text-xs text-gray-500 mb-1.5">{searchQuery ? 'No matching items' : 'No requests or folders yet'}</p>
                             {!searchQuery && (
-                                <button 
-                                    disabled={isCreatingRequest}
-                                    onClick={onNewRequest} 
-                                    className="text-xs text-orange-400 hover:text-orange-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1 mx-auto"
-                                >
-                                    {isCreatingRequest ? (
-                                        <>
-                                            <Loader2 className="h-3 w-3 animate-spin shrink-0" />
-                                            <span>Adding...</span>
-                                        </>
-                                    ) : (
-                                        '+ Add Request'
-                                    )}
-                                </button>
+                                <div className="flex flex-col gap-1.5 max-w-[120px] mx-auto">
+                                    <button 
+                                        disabled={isCreatingRequest}
+                                        onClick={() => onNewRequest(null)} 
+                                        className="text-xs text-orange-400 hover:text-orange-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1"
+                                    >
+                                        {isCreatingRequest ? (
+                                            <>
+                                                <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                                                <span>Adding...</span>
+                                            </>
+                                        ) : (
+                                            '+ Add Request'
+                                        )}
+                                    </button>
+                                    <button 
+                                        onClick={handleCreateFolder} 
+                                        className="text-xs text-gray-400 hover:text-gray-300 transition-colors flex items-center justify-center gap-1"
+                                    >
+                                        + Add Folder
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}

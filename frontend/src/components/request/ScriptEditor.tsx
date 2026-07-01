@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useCollaborationStore } from '@/store/useCollaborationStore';
+import { collaborationService } from '@/services/collaborationService';
 
 interface Scripts {
     pre?: string;
@@ -44,11 +46,11 @@ const POST_SNIPPETS = [
     },
 ];
 
-const TEXTAREA_CLASS =
-    'h-44 w-full rounded border border-gray-700 bg-gray-800 p-3 font-mono text-sm text-gray-100 placeholder-gray-600 focus:border-orange-500 focus:outline-none resize-none';
-
 export default function ScriptEditor({ scripts, onChange }: Props) {
     const [activeScript, setActiveScript] = useState<'pre' | 'post'>('pre');
+    const fieldId = activeScript === 'pre' ? 'script_pre' : 'script_post';
+    const { activeUsers } = useCollaborationStore();
+    const scriptFocusedUser = Array.from(activeUsers.values()).find(u => u.focusedField === fieldId);
 
     const currentValue = activeScript === 'pre' ? (scripts.pre || '') : (scripts.post || '');
     const snippets = activeScript === 'pre' ? PRE_SNIPPETS : POST_SNIPPETS;
@@ -91,7 +93,7 @@ export default function ScriptEditor({ scripts, onChange }: Props) {
 
             <div className="flex gap-3">
                 {/* Editor */}
-                <div className="flex-1">
+                <div className="flex-1 relative">
                     <textarea
                         value={currentValue}
                         onChange={(e) => handleChange(e.target.value)}
@@ -100,8 +102,23 @@ export default function ScriptEditor({ scripts, onChange }: Props) {
                             : '// Write test assertions here\n// pm.test("Status is 200", () => {\n//   pm.response.to.have.status(200);\n// });'
                         }
                         spellCheck={false}
-                        className={TEXTAREA_CLASS}
+                        onFocus={() => collaborationService.sendFocusField(fieldId)}
+                        onBlur={() => collaborationService.sendFocusField(null)}
+                        className="h-44 w-full rounded border bg-gray-800 p-3 font-mono text-sm text-gray-100 placeholder-gray-600 focus:outline-none resize-none transition-all duration-200"
+                        style={{
+                            borderColor: scriptFocusedUser ? scriptFocusedUser.color : '#374151',
+                            boxShadow: scriptFocusedUser ? `0 0 0 2px ${scriptFocusedUser.color}22` : undefined
+                        }}
                     />
+                    {scriptFocusedUser && (
+                        <div 
+                            className="absolute right-3 bottom-3 flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold text-white pointer-events-none select-none transition-all duration-200 animate-pulse"
+                            style={{ backgroundColor: scriptFocusedUser.color }}
+                        >
+                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                            <span>{scriptFocusedUser.userName} editing</span>
+                        </div>
+                    )}
                     {currentValue && (
                         <button
                             onClick={() => handleChange('')}
